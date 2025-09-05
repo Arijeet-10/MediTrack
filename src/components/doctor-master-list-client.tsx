@@ -25,8 +25,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import { doctors as doctorsData } from "@/lib/data"; // Import the shared data
 
 interface DoctorMasterListClientProps {
+  initialDoctors: Doctor[];
   departments: Department[];
 }
 
@@ -45,8 +47,8 @@ const createFormSchema = (departments: Department[]) => z.object({
 type FormValues = z.infer<ReturnType<typeof createFormSchema>>;
 
 
-export function DoctorMasterListClient({ departments }: DoctorMasterListClientProps) {
-  const [doctors, setDoctors] = useState<Doctor[]>([]);
+export function DoctorMasterListClient({ initialDoctors, departments }: DoctorMasterListClientProps) {
+  const [doctors, setDoctors] = useState<Doctor[]>(initialDoctors);
   const { toast } = useToast();
   
   const formSchema = createFormSchema(departments);
@@ -66,12 +68,16 @@ export function DoctorMasterListClient({ departments }: DoctorMasterListClientPr
 
   const onSubmit = (data: FormValues) => {
       const newDoctor: Doctor = {
-        id: `doc${doctors.length + 1}`,
+        id: `doc${doctorsData.length + 1}`,
         availability: ["Monday 9-12", "Wednesday 14-17"], // dummy availability
         ...data,
         languages: data.languages.split(",").map((s) => s.trim()),
       };
-      setDoctors((prev) => [...prev, newDoctor]);
+      
+      // Add to the shared doctors array
+      doctorsData.push(newDoctor);
+      setDoctors([...doctorsData]); // Update local state to reflect change if needed
+
       toast({
         title: "Doctor Added Successfully",
         description: `${newDoctor.name} has been added to the master list.`,
