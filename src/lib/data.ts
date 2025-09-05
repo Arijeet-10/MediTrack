@@ -9,11 +9,11 @@ export const departments: Department[] = [
 ];
 
 export const doctors: Doctor[] = [
-  { id: "doc1", name: "Dr. Priya Sharma", department: "Cardiology", qualification: "MBBS, MD (Cardiology)", experience: 12, availability: ["Monday 9-12", "Wednesday 14-17"], rating: 4.8, languages: ["English", "Hindi"], email: "priya.sharma@meditrack.com", status: "Active" },
-  { id: "doc2", name: "Dr. Rohan Gupta", department: "Neurology", qualification: "MBBS, DM (Neurology)", experience: 15, availability: ["Tuesday 10-13", "Thursday 15-18"], rating: 4.9, languages: ["English", "Kannada"], email: "rohan.gupta@meditrack.com", status: "Active" },
-  { id: "doc3", name: "Dr. Ananya Reddy", department: "Pediatrics", qualification: "MBBS, MD (Pediatrics)", experience: 8, availability: ["Friday 8-11"], rating: 4.7, languages: ["English", "Telugu"], email: "ananya.reddy@meditrack.com", status: "On Leave" },
-  { id: "doc4", name: "Dr. Vikram Singh", department: "Orthopedics", qualification: "MBBS, MS (Orthopedics)", experience: 10, availability: ["Monday 13-16", "Wednesday 9-12"], rating: 4.6, languages: ["English", "Hindi"], email: "vikram.singh@meditrack.com", status: "Active" },
-  { id: "doc5", name: "Dr. Sunita Patel", department: "General", qualification: "MBBS, DNB (General Medicine)", experience: 7, availability: ["Tuesday 14-17", "Thursday 10-13"], rating: 4.8, languages: ["English", "Gujarati"], email: "sunita.patel@meditrack.com", status: "Inactive" },
+  { id: "doc1", name: "Dr. Priya Sharma", department: "Cardiology", qualification: "MBBS, MD (Cardiology)", experience: 12, availability: ["Monday 9-12", "Wednesday 14-17"], languages: ["English", "Hindi"], email: "priya.sharma@meditrack.com", status: "Active" },
+  { id: "doc2", name: "Dr. Rohan Gupta", department: "Neurology", qualification: "MBBS, DM (Neurology)", experience: 15, availability: ["Tuesday 10-13", "Thursday 15-18"], languages: ["English", "Kannada"], email: "rohan.gupta@meditrack.com", status: "Active" },
+  { id: "doc3", name: "Dr. Ananya Reddy", department: "Pediatrics", qualification: "MBBS, MD (Pediatrics)", experience: 8, availability: ["Friday 8-11"], languages: ["English", "Telugu"], email: "ananya.reddy@meditrack.com", status: "On Leave" },
+  { id: "doc4", name: "Dr. Vikram Singh", department: "Orthopedics", qualification: "MBBS, MS (Orthopedics)", experience: 10, availability: ["Monday 13-16", "Wednesday 9-12"], languages: ["English", "Hindi"], email: "vikram.singh@meditrack.com", status: "Active" },
+  { id: "doc5", name: "Dr. Sunita Patel", department: "General", qualification: "MBBS, DNB (General Medicine)", experience: 7, availability: ["Tuesday 14-17", "Thursday 10-13"], languages: ["English", "Gujarati"], email: "sunita.patel@meditrack.com", status: "Inactive" },
 ];
 
 export const patients: Patient[] = [

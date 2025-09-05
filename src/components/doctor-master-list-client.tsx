@@ -139,7 +139,6 @@ export function DoctorMasterListClient({ initialDoctors, departments }: DoctorMa
        // Add new doctor
       const newDoctor: Doctor = {
         id: `doc${doctors.length + 1}`,
-        rating: Math.round((Math.random() * 0.9 + 4.1) * 10) / 10, // dummy rating
         availability: ["Monday 9-12", "Wednesday 14-17"], // dummy availability
         ...data,
         languages: data.languages.split(",").map((s) => s.trim()),
@@ -242,9 +241,7 @@ export function DoctorMasterListClient({ initialDoctors, departments }: DoctorMa
                                 </div>
                                 <p className="text-sm mt-1">{doctor.qualification}</p>
                                 <div className="flex items-center gap-1 text-sm mt-1">
-                                    <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                                    <span>{doctor.rating}/5</span>
-                                    <span className="text-muted-foreground">({doctor.experience} yrs exp.)</span>
+                                    <span>{doctor.experience} yrs exp.</span>
                                 </div>
                             </div>
                         </div>

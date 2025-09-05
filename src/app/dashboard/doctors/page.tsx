@@ -15,24 +15,6 @@ const departmentIcons: Record<Department, React.ElementType> = {
   General: Stethoscope,
 };
 
-const renderStars = (rating: number) => {
-    const fullStars = Math.floor(rating);
-    const halfStar = rating % 1 !== 0;
-    const emptyStars = 5 - fullStars - (halfStar ? 1 : 0);
-    return (
-        <div className="flex items-center gap-0.5">
-            {[...Array(fullStars)].map((_, i) => (
-                <Star key={`full-${i}`} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-            ))}
-            {halfStar && <Star key="half" className="h-4 w-4 fill-yellow-400 text-yellow-400" style={{ clipPath: 'inset(0 50% 0 0)' }} />}
-            {[...Array(emptyStars)].map((_, i) => (
-                <Star key={`empty-${i}`} className="h-4 w-4 fill-muted stroke-muted-foreground" />
-            ))}
-        </div>
-    );
-};
-
-
 export default function DoctorsPage() {
   const activeDoctors = doctors.filter(d => d.status === 'Active' || d.status === 'On Leave');
 
@@ -65,10 +47,6 @@ export default function DoctorsPage() {
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <Icon className="h-4 w-4" />
                   <span>{doctor.experience} years experience</span>
-                </div>
-                 <div className="flex items-center gap-2 text-sm">
-                  {renderStars(doctor.rating)}
-                  <span className="text-muted-foreground">({doctor.rating}/5)</span>
                 </div>
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <Languages className="h-4 w-4" />

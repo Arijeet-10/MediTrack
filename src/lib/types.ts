@@ -27,7 +27,6 @@ export interface Doctor {
   qualification: string; // e.g. "MBBS, MD"
   experience: number; // in years
   availability: string[]; // e.g., ["Monday 9-12", "Wednesday 14-17"]
-  rating: number;
   languages: string[]; // e.g. ["English", "Hindi"]
   email: string;
   status: DoctorStatus;
