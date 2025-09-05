@@ -52,6 +52,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent } from "./ui/card";
+import { OpdSlipDialog } from "./opd-slip-dialog";
+
 
 interface OpdClientProps {
   initialRegistrations: OPDRegistration[];
@@ -88,12 +90,14 @@ export function OpdClient({
 }: OpdClientProps) {
   const [registrations, setRegistrations] = useState(initialRegistrations);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isSlipOpen, setIsSlipOpen] = useState(false);
+  const [selectedRegistration, setSelectedRegistration] = useState<OPDRegistration | null>(null);
   const { toast } = useToast();
   
   const formSchema = createFormSchema(departments);
 
-  const getDoctorName = (doctorId: string) =>
-    doctors.find((d) => d.id === doctorId)?.name || "Unknown";
+  const getDoctor = (doctorId: string) =>
+    doctors.find((d) => d.id === doctorId);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -123,6 +127,11 @@ export function OpdClient({
     });
   };
 
+  const handlePrintSlip = (registration: OPDRegistration) => {
+    setSelectedRegistration(registration);
+    setIsSlipOpen(true);
+  }
+
   const getPaymentStatusVariant = (status: "Paid" | "Pending") => {
     return status === "Paid" ? "default" : "secondary";
   };
@@ -137,7 +146,7 @@ export function OpdClient({
 
   return (
     <>
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-4 no-print">
         <div className="flex items-center">
           <h1 className="text-lg font-semibold md:text-2xl font-headline">
             OPD Registration
@@ -185,7 +194,7 @@ export function OpdClient({
                     <div className="text-xs text-muted-foreground">Age: {reg.age} | {reg.gender}</div>
                   </TableCell>
                   <TableCell>{reg.department}</TableCell>
-                  <TableCell>{getDoctorName(reg.doctorId)}</TableCell>
+                  <TableCell>{getDoctor(reg.doctorId)?.name || "Unknown"}</TableCell>
                    <TableCell>
                     <Badge variant={getVisitTypeVariant(reg.visitType)}>{reg.visitType}</Badge>
                   </TableCell>
@@ -209,7 +218,7 @@ export function OpdClient({
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                        <DropdownMenuItem>
+                        <DropdownMenuItem onSelect={() => handlePrintSlip(reg)}>
                           <Printer className="mr-2 h-4 w-4" />
                           Print OPD Slip
                         </DropdownMenuItem>
@@ -456,6 +465,16 @@ export function OpdClient({
           </Form>
         </DialogContent>
       </Dialog>
+      {selectedRegistration && (
+        <div className="printable-area-container">
+            <OpdSlipDialog
+                registration={selectedRegistration}
+                doctor={getDoctor(selectedRegistration.doctorId)}
+                isOpen={isSlipOpen}
+                onOpenChange={setIsSlipOpen}
+            />
+        </div>
+      )}
     </>
   );
 }
