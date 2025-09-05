@@ -86,12 +86,6 @@ export default function LoginPage() {
             </CardContent>
           </Card>
         </TabsContent>
-         <div className="mt-4 text-center text-sm">
-            Don&apos;t have an account?{" "}
-            <Link href="#" className="underline">
-              Sign up
-            </Link>
-          </div>
       </Tabs>
     </div>
   );
