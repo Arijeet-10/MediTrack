@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Stethoscope } from "lucide-react";
+import { Stethoscope, User, FlaskConical, Pill } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -11,55 +11,94 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
+function LoginForm({ role }: { role: string }) {
+  return (
+    <div className="grid gap-4">
+      <div className="grid gap-2">
+        <Label htmlFor={`${role}-email`}>Email</Label>
+        <Input
+          id={`${role}-email`}
+          type="email"
+          placeholder="m@example.com"
+          required
+        />
+      </div>
+      <div className="grid gap-2">
+        <div className="flex items-center">
+          <Label htmlFor={`${role}-password`}>Password</Label>
+          <Link
+            href="#"
+            className="ml-auto inline-block text-sm underline"
+          >
+            Forgot your password?
+          </Link>
+        </div>
+        <Input id={`${role}-password`} type="password" required />
+      </div>
+      <Button type="submit" className="w-full" asChild>
+        <Link href="/dashboard">Login as {role}</Link>
+      </Button>
+    </div>
+  );
+}
+
 
 export default function LoginPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
-      <Card className="mx-auto w-full max-w-sm">
+      <Tabs defaultValue="admin" className="w-full max-w-sm">
         <CardHeader className="text-center">
             <div className="flex justify-center items-center mb-4">
                 <Stethoscope className="h-8 w-8 text-primary" />
             </div>
           <CardTitle className="text-2xl font-headline">MediTrack</CardTitle>
           <CardDescription>
-            Enter your email below to login to your account
+            Select your role to login to your account
           </CardDescription>
         </CardHeader>
-        <CardContent>
-          <div className="grid gap-4">
-            <div className="grid gap-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="m@example.com"
-                required
-              />
-            </div>
-            <div className="grid gap-2">
-              <div className="flex items-center">
-                <Label htmlFor="password">Password</Label>
-                <Link
-                  href="#"
-                  className="ml-auto inline-block text-sm underline"
-                >
-                  Forgot your password?
-                </Link>
-              </div>
-              <Input id="password" type="password" required />
-            </div>
-            <Button type="submit" className="w-full" asChild>
-              <Link href="/dashboard">Login</Link>
-            </Button>
-          </div>
-          <div className="mt-4 text-center text-sm">
+        <TabsList className="grid w-full grid-cols-4">
+          <TabsTrigger value="admin"><User className="h-4 w-4 mr-1"/>Admin</TabsTrigger>
+          <TabsTrigger value="doctor"><Stethoscope className="h-4 w-4 mr-1"/>Doctor</TabsTrigger>
+          <TabsTrigger value="lab"><FlaskConical className="h-4 w-4 mr-1"/>Laboratory</TabsTrigger>
+          <TabsTrigger value="pharmacist"><Pill className="h-4 w-4 mr-1"/>Pharmacist</TabsTrigger>
+        </TabsList>
+        <TabsContent value="admin">
+          <Card>
+            <CardContent className="pt-6">
+              <LoginForm role="Admin" />
+            </CardContent>
+          </Card>
+        </TabsContent>
+        <TabsContent value="doctor">
+           <Card>
+            <CardContent className="pt-6">
+              <LoginForm role="Doctor" />
+            </CardContent>
+          </Card>
+        </TabsContent>
+        <TabsContent value="lab">
+           <Card>
+            <CardContent className="pt-6">
+              <LoginForm role="Laboratory" />
+            </CardContent>
+          </Card>
+        </TabsContent>
+        <TabsContent value="pharmacist">
+           <Card>
+            <CardContent className="pt-6">
+              <LoginForm role="Pharmacist" />
+            </CardContent>
+          </Card>
+        </TabsContent>
+         <div className="mt-4 text-center text-sm">
             Don&apos;t have an account?{" "}
             <Link href="#" className="underline">
               Sign up
             </Link>
           </div>
-        </CardContent>
-      </Card>
+      </Tabs>
     </div>
   );
 }
