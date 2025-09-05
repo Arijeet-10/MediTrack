@@ -67,9 +67,10 @@ export function PharmacistDashboardClient({
   }, { Pending: 0, Filled: 0, Cancelled: 0 });
 
   return (
-    <div className="min-h-screen w-full bg-background">
-       <header className="sticky top-0 z-10 flex h-16 items-center gap-4 border-b bg-background px-4 md:px-6">
-         <Link href="#" className="flex items-center gap-2 font-semibold">
+    <>
+      <div className="min-h-screen w-full bg-background">
+        <header className="sticky top-0 z-10 flex h-16 items-center gap-4 border-b bg-background px-4 md:px-6">
+          <Link href="#" className="flex items-center gap-2 font-semibold">
           <Logo className="h-6 w-6" />
           <span>MediTrack - Pharmacist Portal</span>
         </Link>
@@ -126,7 +127,7 @@ export function PharmacistDashboardClient({
             <CardHeader>
                 <CardTitle>Prescription Queue</CardTitle>
                 <CardDescription>Manage and track patient prescriptions.</CardDescription>
-            </Header>
+            </CardHeader>
             <CardContent>
                 <Table>
                   <TableHeader>
@@ -175,5 +176,6 @@ export function PharmacistDashboardClient({
         </Card>
       </main>
     </div>
+    </>
   );
 }
