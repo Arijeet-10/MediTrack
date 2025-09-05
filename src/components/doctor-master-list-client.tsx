@@ -1,24 +1,18 @@
+
 "use client";
 
-import { useState } from "react";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { useState, useMemo } from "react";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal, PlusCircle } from "lucide-react";
-import type { Doctor, Department } from "@/lib/types";
+import { MoreHorizontal, PlusCircle, Star, Edit, Trash, CheckCircle, XCircle, PowerOff } from "lucide-react";
+import type { Doctor, Department, DoctorStatus } from "@/lib/types";
 import {
   Dialog,
   DialogContent,
@@ -47,6 +41,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import { Card, CardContent } from "@/components/ui/card";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
+
 
 interface DoctorMasterListClientProps {
   initialDoctors: Doctor[];
@@ -55,47 +54,110 @@ interface DoctorMasterListClientProps {
 
 const formSchema = z.object({
   name: z.string().min(1, "Name is required"),
-  department: z.string().min(1, "Department is required"),
-  availability: z.string().min(1, "Availability is required"),
-  rating: z.coerce.number().min(0).max(5),
-  experience: z.coerce.number().min(0),
+  department: z.nativeEnum(Department),
+  qualification: z.string().min(1, "Qualification is required"),
+  experience: z.coerce.number().min(0, "Experience must be a positive number"),
+  languages: z.string().min(1, "Languages are required"),
+  email: z.string().email("Invalid email address"),
+  status: z.nativeEnum(DoctorStatus),
 });
 
 type FormValues = z.infer<typeof formSchema>;
 
+const statusConfig: Record<DoctorStatus, { variant: "default" | "secondary" | "destructive"; icon: React.ElementType }> = {
+    Active: { variant: 'default', icon: CheckCircle },
+    Inactive: { variant: 'destructive', icon: XCircle },
+    "On Leave": { variant: 'secondary', icon: PowerOff }
+}
+
 export function DoctorMasterListClient({ initialDoctors, departments }: DoctorMasterListClientProps) {
   const [doctors, setDoctors] = useState(initialDoctors);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [editingDoctor, setEditingDoctor] = useState<Doctor | null>(null);
   const { toast } = useToast();
+
+  const [departmentFilter, setDepartmentFilter] = useState<"All" | Department>("All");
+  const [statusFilter, setStatusFilter] = useState<"All" | DoctorStatus>("All");
+
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: "",
-      department: "",
-      availability: "",
-      rating: 4.5,
+      qualification: "",
       experience: 5,
+      languages: "",
+      email: "",
+      status: "Active",
     },
   });
 
-  const onSubmit = (data: FormValues) => {
-    const newDoctor: Doctor = {
-      id: `doc${doctors.length + 1}`,
-      name: data.name,
-      department: data.department as Department,
-      availability: data.availability.split(",").map((s) => s.trim()),
-      rating: data.rating,
-      experience: data.experience,
-    };
-    setDoctors((prev) => [...prev, newDoctor]);
-    setIsDialogOpen(false);
-    form.reset();
-    toast({
-      title: "Doctor Added",
-      description: `${newDoctor.name} has been added to the master list.`,
-    });
+  const openDialog = (doctor: Doctor | null) => {
+    setEditingDoctor(doctor);
+    if (doctor) {
+      form.reset({
+        name: doctor.name,
+        department: doctor.department,
+        qualification: doctor.qualification,
+        experience: doctor.experience,
+        languages: doctor.languages.join(", "),
+        email: doctor.email,
+        status: doctor.status,
+      });
+    } else {
+      form.reset({
+        name: "",
+        department: "General",
+        qualification: "",
+        experience: 5,
+        languages: "",
+        email: "",
+        status: "Active"
+      });
+    }
+    setIsDialogOpen(true);
   };
+
+  const onSubmit = (data: FormValues) => {
+    if (editingDoctor) {
+      // Update existing doctor
+      const updatedDoctor: Doctor = {
+        ...editingDoctor,
+        ...data,
+        languages: data.languages.split(",").map((s) => s.trim()),
+      };
+      setDoctors(doctors.map(d => d.id === editingDoctor.id ? updatedDoctor : d));
+      toast({
+        title: "Doctor Updated",
+        description: `${updatedDoctor.name}'s details have been updated.`,
+      });
+    } else {
+       // Add new doctor
+      const newDoctor: Doctor = {
+        id: `doc${doctors.length + 1}`,
+        rating: Math.round((Math.random() * 0.9 + 4.1) * 10) / 10, // dummy rating
+        availability: ["Monday 9-12", "Wednesday 14-17"], // dummy availability
+        ...data,
+        languages: data.languages.split(",").map((s) => s.trim()),
+      };
+      setDoctors((prev) => [...prev, newDoctor]);
+      toast({
+        title: "Doctor Added",
+        description: `${newDoctor.name} has been added to the master list.`,
+      });
+    }
+
+    setIsDialogOpen(false);
+    setEditingDoctor(null);
+  };
+
+  const filteredDoctors = useMemo(() => {
+    return doctors.filter(doctor => {
+        const departmentMatch = departmentFilter === 'All' || doctor.department === departmentFilter;
+        const statusMatch = statusFilter === 'All' || doctor.status === statusFilter;
+        return departmentMatch && statusMatch;
+    });
+  }, [doctors, departmentFilter, statusFilter]);
 
   return (
     <>
@@ -105,7 +167,7 @@ export function DoctorMasterListClient({ initialDoctors, departments }: DoctorMa
             Doctor Master List
           </h1>
           <div className="ml-auto flex items-center gap-2">
-            <Button size="sm" className="h-8 gap-1" onClick={() => setIsDialogOpen(true)}>
+            <Button size="sm" className="h-9 gap-1" onClick={() => openDialog(null)}>
               <PlusCircle className="h-3.5 w-3.5" />
               <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
                 Add Doctor
@@ -113,57 +175,105 @@ export function DoctorMasterListClient({ initialDoctors, departments }: DoctorMa
             </Button>
           </div>
         </div>
-        <div className="rounded-xl border shadow-sm bg-card">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Department</TableHead>
-                <TableHead>Availability</TableHead>
-                <TableHead>Rating</TableHead>
-                <TableHead>Experience</TableHead>
-                <TableHead>
-                  <span className="sr-only">Actions</span>
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {doctors.map((doctor) => (
-                <TableRow key={doctor.id}>
-                  <TableCell className="font-medium">{doctor.name}</TableCell>
-                  <TableCell>{doctor.department}</TableCell>
-                  <TableCell>{doctor.availability.join(", ")}</TableCell>
-                  <TableCell>{doctor.rating}/5</TableCell>
-                  <TableCell>{doctor.experience} years</TableCell>
-                  <TableCell>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button aria-haspopup="true" size="icon" variant="ghost">
-                          <MoreHorizontal className="h-4 w-4" />
-                          <span className="sr-only">Toggle menu</span>
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                        <DropdownMenuItem>Edit</DropdownMenuItem>
-                        <DropdownMenuItem className="text-destructive">
-                          Delete
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+
+        <Card>
+            <CardContent className="p-4 flex gap-4">
+                <Select value={departmentFilter} onValueChange={(value) => setDepartmentFilter(value as any)}>
+                    <SelectTrigger className="w-[200px]">
+                        <SelectValue placeholder="Filter by department" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="All">All Departments</SelectItem>
+                        {departments.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
+                    </SelectContent>
+                </Select>
+                <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as any)}>
+                    <SelectTrigger className="w-[200px]">
+                        <SelectValue placeholder="Filter by status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="All">All Statuses</SelectItem>
+                        <SelectItem value="Active">Active</SelectItem>
+                        <SelectItem value="Inactive">Inactive</SelectItem>
+                        <SelectItem value="On Leave">On Leave</SelectItem>
+                    </SelectContent>
+                </Select>
+            </CardContent>
+        </Card>
+
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {filteredDoctors.map(doctor => {
+                const statusInfo = statusConfig[doctor.status];
+                return (
+                <Card key={doctor.id} className="flex flex-col">
+                    <CardContent className="p-4 flex-grow">
+                        <div className="flex items-start gap-4">
+                            <Avatar className="h-20 w-20 border">
+                                <AvatarImage src={`/avatars/${doctor.id}.png`} alt={doctor.name} data-ai-hint="doctor headshot" />
+                                <AvatarFallback>{doctor.name.split(" ").map(n => n[0]).join("")}</AvatarFallback>
+                            </Avatar>
+                            <div className="flex-grow">
+                                <div className="flex justify-between items-start">
+                                    <div>
+                                        <h3 className="font-bold text-lg">{doctor.name}</h3>
+                                        <p className="text-sm text-muted-foreground">{doctor.department}</p>
+                                    </div>
+                                     <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button aria-haspopup="true" size="icon" variant="ghost" className="h-8 w-8">
+                                                <MoreHorizontal className="h-4 w-4" />
+                                                <span className="sr-only">Toggle menu</span>
+                                            </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent align="end">
+                                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                            <DropdownMenuItem onSelect={() => openDialog(doctor)}>
+                                                <Edit className="mr-2 h-4 w-4" />
+                                                Edit
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem className="text-destructive">
+                                                <Trash className="mr-2 h-4 w-4" />
+                                                Delete
+                                            </DropdownMenuItem>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+                                </div>
+                                <p className="text-sm mt-1">{doctor.qualification}</p>
+                                <div className="flex items-center gap-1 text-sm mt-1">
+                                    <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                                    <span>{doctor.rating}/5</span>
+                                    <span className="text-muted-foreground">({doctor.experience} yrs exp.)</span>
+                                </div>
+                            </div>
+                        </div>
+                         <div className="mt-4 space-y-2 text-sm">
+                            <div className="flex items-center justify-between">
+                                <span className="text-muted-foreground">Email</span>
+                                <span>{doctor.email}</span>
+                            </div>
+                             <div className="flex items-center justify-between">
+                                <span className="text-muted-foreground">Languages</span>
+                                <span>{doctor.languages.join(", ")}</span>
+                            </div>
+                        </div>
+                    </CardContent>
+                     <div className="p-4 border-t">
+                        <Badge variant={statusInfo.variant} className="w-full justify-center">
+                            <statusInfo.icon className="mr-2 h-4 w-4" />
+                            {doctor.status}
+                        </Badge>
+                     </div>
+                </Card>
+            )})}
         </div>
+
       </div>
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Add New Doctor</DialogTitle>
+            <DialogTitle>{editingDoctor ? "Edit Doctor" : "Add New Doctor"}</DialogTitle>
             <DialogDescription>
-              Fill in the details below to add a new doctor to the master list.
+              {editingDoctor ? "Update the doctor's details below." : "Fill in the details to add a new doctor."}
             </DialogDescription>
           </DialogHeader>
           <Form {...form}>
@@ -173,9 +283,22 @@ export function DoctorMasterListClient({ initialDoctors, departments }: DoctorMa
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Name</FormLabel>
+                    <FormLabel>Full Name</FormLabel>
                     <FormControl>
                       <Input placeholder="e.g., Dr. John Doe" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+               <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Email</FormLabel>
+                    <FormControl>
+                      <Input placeholder="e.g., john.doe@example.com" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -205,47 +328,72 @@ export function DoctorMasterListClient({ initialDoctors, departments }: DoctorMa
                   </FormItem>
                 )}
               />
-              <FormField
-                control={form.control}
-                name="availability"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Availability</FormLabel>
-                    <FormControl>
-                      <Input placeholder="e.g., Monday 9-12, Wednesday 14-17" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="rating"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Rating (0-5)</FormLabel>
-                    <FormControl>
-                      <Input type="number" step="0.1" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
                <FormField
                 control={form.control}
-                name="experience"
+                name="qualification"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Years of Experience</FormLabel>
+                    <FormLabel>Qualification</FormLabel>
                     <FormControl>
-                      <Input type="number" {...field} />
+                      <Input placeholder="e.g., MBBS, MD" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
+              <FormField
+                control={form.control}
+                name="languages"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Languages Spoken</FormLabel>
+                    <FormControl>
+                      <Input placeholder="e.g., English, Hindi, Tamil" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+               <div className="grid grid-cols-2 gap-4">
+                 <FormField
+                    control={form.control}
+                    name="experience"
+                    render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>Experience (Yrs)</FormLabel>
+                        <FormControl>
+                        <Input type="number" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                    </FormItem>
+                    )}
+                />
+                <FormField
+                control={form.control}
+                name="status"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Status</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select status" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="Active">Active</SelectItem>
+                        <SelectItem value="Inactive">Inactive</SelectItem>
+                        <SelectItem value="On Leave">On Leave</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+               </div>
               <DialogFooter>
-                <Button type="submit">Add Doctor</Button>
+                <Button type="button" variant="ghost" onClick={() => setIsDialogOpen(false)}>Cancel</Button>
+                <Button type="submit">{editingDoctor ? "Save Changes" : "Add Doctor"}</Button>
               </DialogFooter>
             </form>
           </Form>

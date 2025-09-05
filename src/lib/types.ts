@@ -6,6 +6,7 @@ export type Gender = "Male" | "Female" | "Other";
 export type AppointmentStatus = "Confirmed" | "Pending" | "Cancelled" | "Completed";
 export type AppointmentMode = "In-person" | "Online" | "Telephonic";
 export type PaymentStatus = "Paid" | "Pending" | "Partially Paid";
+export type DoctorStatus = "Active" | "Inactive" | "On Leave";
 
 
 export interface Patient {
@@ -23,9 +24,13 @@ export interface Doctor {
   id: string;
   name: string;
   department: Department;
+  qualification: string; // e.g. "MBBS, MD"
+  experience: number; // in years
   availability: string[]; // e.g., ["Monday 9-12", "Wednesday 14-17"]
   rating: number;
-  experience: number;
+  languages: string[]; // e.g. ["English", "Hindi"]
+  email: string;
+  status: DoctorStatus;
 }
 
 export interface Appointment {

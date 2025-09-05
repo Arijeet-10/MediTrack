@@ -3,7 +3,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/com
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { doctors } from "@/lib/data";
 import { Badge } from "@/components/ui/badge";
-import { Stethoscope, Heart, Brain, Bone, Baby, Star, MessageSquare, Phone } from "lucide-react";
+import { Stethoscope, Heart, Brain, Bone, Baby, Star, MessageSquare, Phone, GraduationCap, Languages } from "lucide-react";
 import type { Department } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 
@@ -34,6 +34,8 @@ const renderStars = (rating: number) => {
 
 
 export default function DoctorsPage() {
+  const activeDoctors = doctors.filter(d => d.status === 'Active' || d.status === 'On Leave');
+
   return (
     <AppShell>
       <div className="flex flex-col gap-4">
@@ -41,10 +43,10 @@ export default function DoctorsPage() {
           Our Doctors
         </h1>
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {doctors.map((doctor) => {
+          {activeDoctors.map((doctor) => {
             const Icon = departmentIcons[doctor.department] || Stethoscope;
             return (
-            <Card key={doctor.id} className="transition-all duration-200 hover:shadow-lg hover:scale-105">
+            <Card key={doctor.id} className="transition-all duration-200 hover:shadow-lg hover:scale-105 flex flex-col">
               <CardHeader className="flex flex-row items-center gap-4">
                 <Avatar className="h-16 w-16">
                   <AvatarImage src={`/avatars/${doctor.id}.png`} alt={doctor.name} data-ai-hint="doctor headshot" />
@@ -55,7 +57,11 @@ export default function DoctorsPage() {
                   <CardDescription>{doctor.department}</CardDescription>
                 </div>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-4 flex-grow">
+                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <GraduationCap className="h-4 w-4" />
+                    <span>{doctor.qualification}</span>
+                </div>
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <Icon className="h-4 w-4" />
                   <span>{doctor.experience} years experience</span>
@@ -63,6 +69,10 @@ export default function DoctorsPage() {
                  <div className="flex items-center gap-2 text-sm">
                   {renderStars(doctor.rating)}
                   <span className="text-muted-foreground">({doctor.rating}/5)</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Languages className="h-4 w-4" />
+                    <span>{doctor.languages.join(", ")}</span>
                 </div>
                 <div>
                   <h4 className="font-semibold mb-2">Availability</h4>
@@ -72,11 +82,13 @@ export default function DoctorsPage() {
                     ))}
                   </div>
                 </div>
-                <div className="flex gap-2 pt-2">
-                    <Button variant="outline" size="sm">
+              </CardContent>
+              <CardContent className="pt-2 mt-auto">
+                 <div className="flex gap-2 pt-2 border-t">
+                    <Button variant="outline" size="sm" className="flex-1">
                         <MessageSquare className="mr-2 h-4 w-4" /> Message
                     </Button>
-                    <Button variant="outline" size="sm">
+                    <Button variant="outline" size="sm" className="flex-1">
                         <Phone className="mr-2 h-4 w-4" /> Call
                     </Button>
                 </div>
