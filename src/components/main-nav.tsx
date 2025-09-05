@@ -51,10 +51,21 @@ export function MainNav() {
   const pathname = usePathname();
 
   const isActive = (href: string) => {
+    // Exact match for the main dashboard page
     if (href === "/dashboard") {
       return pathname === href;
     }
-    return pathname.startsWith(href);
+    // For other pages, check if the pathname starts with the href,
+    // but also ensure it's not a parent of a more specific active route.
+    // For example, if on /dashboard/doctors/master-list, /dashboard/doctors should not be active.
+    const isParentOfActive = menuItems.some(item => 
+        pathname.startsWith(item.href) && 
+        item.href.length > href.length && 
+        href !== '/dashboard' &&
+        item.href.startsWith(href)
+    );
+
+    return pathname.startsWith(href) && !isParentOfActive;
   };
 
   return (
