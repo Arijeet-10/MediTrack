@@ -1,4 +1,4 @@
-import type { Patient, Doctor, Department } from "./types";
+import type { Patient, Doctor, Department, Appointment } from "./types";
 
 export const departments: Department[] = [
   "Cardiology",
@@ -67,4 +67,39 @@ export const patients: Patient[] = [
     status: "Under Observation",
     doctorId: "doc1",
   },
+];
+
+export const appointments: Appointment[] = [
+    {
+        id: "apt1",
+        patientId: "pat1",
+        doctorId: "doc1",
+        date: new Date("2024-08-10T10:00:00Z"),
+        time: "10:00 AM",
+        reason: "Follow-up",
+    },
+    {
+        id: "apt2",
+        patientId: "pat2",
+        doctorId: "doc2",
+        date: new Date("2024-08-10T11:00:00Z"),
+        time: "11:00 AM",
+        reason: "Initial Consultation",
+    },
+    {
+        id: "apt3",
+        patientId: "pat4",
+        doctorId: "doc3",
+        date: new Date("2024-08-11T09:30:00Z"),
+        time: "09:30 AM",
+        reason: "Checkup",
+    },
+     {
+        id: "apt4",
+        patientId: "pat5",
+        doctorId: "doc1",
+        date: new Date("2024-08-12T15:00:00Z"),
+        time: "03:00 PM",
+        reason: "Routine Check",
+    },
 ];
