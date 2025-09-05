@@ -1,21 +1,30 @@
 
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { appointments, doctors, billings } from "@/lib/data";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
-import { Users, CreditCard, Stethoscope } from "lucide-react";
+import { Users, CreditCard, Stethoscope, Calendar as CalendarIcon } from "lucide-react";
 import { format, startOfDay } from "date-fns";
+import { Popover, PopoverTrigger, PopoverContent } from "./ui/popover";
+import { Button } from "./ui/button";
+import { Calendar } from "./ui/calendar";
+import { cn } from "@/lib/utils";
 
 export function DailyStats() {
-    const today = startOfDay(new Date());
+    const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
 
     const dailyStats = useMemo(() => {
-        const todaysAppointments = appointments.filter(a => startOfDay(new Date(a.date)).getTime() === today.getTime());
+        if (!selectedDate) {
+             return { totalPatients: 0, amountCollected: 0, appointmentsPerDoctor: {} };
+        }
+        const startOfSelectedDay = startOfDay(selectedDate);
+
+        const todaysAppointments = appointments.filter(a => startOfDay(new Date(a.date)).getTime() === startOfSelectedDay.getTime());
 
         const totalPatients = new Set(todaysAppointments.map(a => a.patientName)).size;
         
-        const todaysBillings = billings.filter(b => startOfDay(new Date(b.date)).getTime() === today.getTime());
+        const todaysBillings = billings.filter(b => startOfDay(new Date(b.date)).getTime() === startOfSelectedDay.getTime());
         const amountCollected = todaysBillings
             .filter(b => b.status === 'Paid')
             .reduce((sum, b) => sum + b.amount, 0);
@@ -29,10 +38,32 @@ export function DailyStats() {
         }, {} as Record<string, number>);
 
         return { totalPatients, amountCollected, appointmentsPerDoctor };
-    }, [today]);
+    }, [selectedDate]);
 
     return (
         <div className="space-y-2">
+             <Popover>
+                <PopoverTrigger asChild>
+                <Button
+                    variant={"outline"}
+                    className={cn(
+                    "w-full justify-start text-left font-normal text-xs h-8",
+                    !selectedDate && "text-muted-foreground"
+                    )}
+                >
+                    <CalendarIcon className="mr-2 h-3 w-3" />
+                    {selectedDate ? format(selectedDate, "PPP") : <span>Pick a date</span>}
+                </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                    mode="single"
+                    selected={selectedDate}
+                    onSelect={setSelectedDate}
+                    initialFocus
+                />
+                </PopoverContent>
+            </Popover>
              <Card className="bg-sidebar-accent border-sidebar-border">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 p-2">
                     <CardTitle className="text-xs font-medium">
@@ -74,4 +105,3 @@ export function DailyStats() {
         </div>
     )
 }
-
