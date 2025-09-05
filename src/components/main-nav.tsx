@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BrainCircuit, Calendar, LayoutDashboard, Stethoscope, List } from "lucide-react";
+import { BrainCircuit, Calendar, LayoutDashboard, Stethoscope, List, CreditCard, FlaskConical } from "lucide-react";
 
 import {
   SidebarMenu,
@@ -34,6 +34,16 @@ export function MainNav() {
       icon: List,
     },
     {
+      href: "/dashboard/billing",
+      label: "Billing",
+      icon: CreditCard,
+    },
+    {
+      href: "/dashboard/lab-appointments",
+      label: "Lab Appointments",
+      icon: FlaskConical,
+    },
+    {
       href: "/dashboard/ai-diagnosis",
       label: "AI Diagnosis",
       icon: BrainCircuit,
@@ -46,7 +56,7 @@ export function MainNav() {
         <SidebarMenuItem key={item.href}>
           <Link href={item.href}>
             <SidebarMenuButton
-              isActive={pathname === item.href}
+              isActive={pathname.startsWith(item.href) && (item.href === '/dashboard' ? pathname === item.href : true)}
               className={cn("w-full justify-start")}
               tooltip={item.label}
             >

@@ -88,13 +88,17 @@ export function DashboardClient({
           Dashboard
         </h1>
         <div className="flex items-center gap-2">
-           <Button variant="outline" size="sm">
-            <CreditCard className="mr-2" />
-            Go to Billing
+           <Button variant="outline" size="sm" asChild>
+            <Link href="/dashboard/billing">
+              <CreditCard className="mr-2" />
+              Go to Billing
+            </Link>
           </Button>
-          <Button size="sm">
-            <FlaskConical className="mr-2" />
-            Lab Appointments
+          <Button size="sm" asChild>
+            <Link href="/dashboard/lab-appointments">
+              <FlaskConical className="mr-2" />
+              Lab Appointments
+            </Link>
           </Button>
         </div>
       </header>
