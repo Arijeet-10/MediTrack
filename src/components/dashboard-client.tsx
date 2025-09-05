@@ -122,7 +122,7 @@ export function DashboardClient({
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">+{patients.length}</div>
+            <div className="text-2xl font-bold">{patients.length}</div>
           </CardContent>
         </Card>
         <Card>
@@ -131,7 +131,7 @@ export function DashboardClient({
             <Stethoscope className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">+{doctors.length}</div>
+            <div className="text-2xl font-bold">{doctors.length}</div>
           </CardContent>
         </Card>
         <Card>
@@ -140,7 +140,7 @@ export function DashboardClient({
             <CalendarCheck className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">+{appointments.length}</div>
+            <div className="text-2xl font-bold">{appointments.length}</div>
           </CardContent>
         </Card>
       </div>
