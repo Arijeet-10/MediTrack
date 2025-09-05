@@ -63,6 +63,7 @@ export interface Billing {
   amount: number;
   date: Date;
   status: BillingStatus;
+  serviceType: string;
 }
 
 export interface Analyte {

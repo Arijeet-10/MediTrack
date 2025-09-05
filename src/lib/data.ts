@@ -138,11 +138,11 @@ export const appointments: Appointment[] = [
 ];
 
 export const billings: Billing[] = [
-    { id: "bill1", patientId: "pat1", amount: 1500, date: new Date("2024-08-10"), status: "Paid" },
-    { id: "bill2", patientId: "pat2", amount: 2000, date: new Date("2024-08-10"), status: "Pending" },
-    { id: "bill3", patientId: "pat3", amount: 2500, date: new Date("2024-07-05"), status: "Overdue" },
-    { id: "bill4", patientId: "pat4", amount: 800, date: new Date("2024-08-11"), status: "Paid" },
-    { id: "bill5", patientId: "pat5", amount: 500, date: new Date("2024-08-12"), status: "Pending" },
+    { id: "bill1", patientId: "pat1", serviceType: "Consultation", amount: 1500, date: new Date("2024-08-10"), status: "Paid" },
+    { id: "bill2", patientId: "pat2", serviceType: "Consultation", amount: 2000, date: new Date("2024-08-10"), status: "Pending" },
+    { id: "bill3", patientId: "pat3", serviceType: "Procedure", amount: 2500, date: new Date("2024-07-05"), status: "Overdue" },
+    { id: "bill4", patientId: "pat4", serviceType: "Consultation", amount: 800, date: new Date("2024-08-11"), status: "Paid" },
+    { id: "bill5", patientId: "pat5", serviceType: "Lab Test", amount: 500, date: new Date("2024-08-12"), status: "Pending" },
 ];
 
 export const labAppointments: LabAppointment[] = [
