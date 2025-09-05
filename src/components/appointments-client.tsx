@@ -18,7 +18,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal, PlusCircle, Video, Phone, Building, FileEdit } from "lucide-react";
+import { MoreHorizontal, PlusCircle, Video, Phone, Building, FileEdit, Search } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -146,6 +146,7 @@ export function AppointmentsClient({
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingAppointment, setEditingAppointment] = useState<Appointment | null>(null);
   const [statusFilter, setStatusFilter] = useState<"All" | AppointmentStatus>("All");
+  const [searchQuery, setSearchQuery] = useState("");
   const { toast } = useToast();
 
   const getDoctorName = (doctorId: string) => doctors.find((d) => d.id === doctorId)?.name || "Unknown";
@@ -156,7 +157,10 @@ export function AppointmentsClient({
 
   useEffect(() => {
     if (editingAppointment) {
-      form.reset(editingAppointment);
+      form.reset({
+          ...editingAppointment,
+           date: new Date(editingAppointment.date) 
+      });
     } else {
       form.reset({
         patientName: "",
@@ -173,15 +177,24 @@ export function AppointmentsClient({
         paymentStatus: "Pending",
       });
     }
-  }, [editingAppointment, form]);
+  }, [editingAppointment, form, isDialogOpen]);
 
 
   const filteredAppointments = useMemo(() => {
-    if (statusFilter === "All") {
-      return appointments;
+    let filtered = appointments;
+
+    if (statusFilter !== "All") {
+      filtered = filtered.filter(a => a.status === statusFilter);
     }
-    return appointments.filter(a => a.status === statusFilter);
-  }, [appointments, statusFilter]);
+
+    if (searchQuery) {
+        filtered = filtered.filter(a => 
+            a.patientName.toLowerCase().includes(searchQuery.toLowerCase())
+        );
+    }
+    
+    return filtered;
+  }, [appointments, statusFilter, searchQuery]);
 
   const handleEdit = (appointment: Appointment) => {
     setEditingAppointment(appointment);
@@ -198,7 +211,7 @@ export function AppointmentsClient({
     if (editingAppointment) {
       // Update existing appointment
       const updatedAppointments = appointments.map((apt) =>
-        apt.id === editingAppointment.id ? { ...apt, ...data } : apt
+        apt.id === editingAppointment.id ? { ...apt, ...data, id: apt.id, patientId: apt.patientId } : apt
       );
       setAppointments(updatedAppointments);
       toast({
@@ -229,6 +242,16 @@ export function AppointmentsClient({
             Appointments
           </h1>
           <div className="ml-auto flex items-center gap-2">
+             <div className="relative">
+                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                    type="search"
+                    placeholder="Search patient..."
+                    className="pl-8 sm:w-[200px] md:w-[300px]"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                />
+            </div>
              <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as any)}>
                 <SelectTrigger className="w-[180px]">
                     <SelectValue placeholder="Filter by status" />
@@ -280,7 +303,7 @@ export function AppointmentsClient({
                    </TableCell>
                   <TableCell>{getDoctorName(appointment.doctorId)}</TableCell>
                   <TableCell>
-                      <div>{format(appointment.date, "dd-MMM-yyyy")}</div>
+                      <div>{format(new Date(appointment.date), "dd-MMM-yyyy")}</div>
                       <div className="text-xs text-muted-foreground">{appointment.time} ({appointment.duration} min)</div>
                   </TableCell>
                   <TableCell>
@@ -328,7 +351,12 @@ export function AppointmentsClient({
           </Table>
         </div>
       </div>
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+      <Dialog open={isDialogOpen} onOpenChange={(isOpen) => {
+          setIsDialogOpen(isOpen);
+          if (!isOpen) {
+              setEditingAppointment(null);
+          }
+      }}>
         <DialogContent className="sm:max-w-2xl">
           <DialogHeader>
             <DialogTitle>{editingAppointment ? "Edit Appointment" : "Schedule New Appointment"}</DialogTitle>
