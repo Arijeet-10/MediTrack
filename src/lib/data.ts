@@ -1,4 +1,3 @@
-
 import type { Patient, Doctor, Department, Appointment, Billing, LabAppointment, MedicalRecord } from "./types";
 
 export const departments: Department[] = [
@@ -78,6 +77,11 @@ export const appointments: Appointment[] = [
         date: new Date("2024-08-10T10:00:00Z"),
         time: "10:00 AM",
         reason: "Follow-up",
+        status: "Completed",
+        mode: "In-person",
+        duration: 30,
+        fees: 1500,
+        paymentStatus: "Paid",
     },
     {
         id: "apt2",
@@ -86,6 +90,11 @@ export const appointments: Appointment[] = [
         date: new Date("2024-08-10T11:00:00Z"),
         time: "11:00 AM",
         reason: "Initial Consultation",
+        status: "Confirmed",
+        mode: "Online",
+        duration: 45,
+        fees: 2000,
+        paymentStatus: "Pending",
     },
     {
         id: "apt3",
@@ -94,6 +103,11 @@ export const appointments: Appointment[] = [
         date: new Date("2024-08-11T09:30:00Z"),
         time: "09:30 AM",
         reason: "Checkup",
+        status: "Confirmed",
+        mode: "In-person",
+        duration: 30,
+        fees: 800,
+        paymentStatus: "Paid",
     },
      {
         id: "apt4",
@@ -102,6 +116,24 @@ export const appointments: Appointment[] = [
         date: new Date("2024-08-12T15:00:00Z"),
         time: "03:00 PM",
         reason: "Routine Check",
+        status: "Pending",
+        mode: "Telephonic",
+        duration: 15,
+        fees: 500,
+        paymentStatus: "Pending",
+    },
+     {
+        id: "apt5",
+        patientId: "pat3",
+        doctorId: "doc4",
+        date: new Date("2024-08-09T14:00:00Z"),
+        time: "02:00 PM",
+        reason: "Pre-surgery consultation",
+        status: "Cancelled",
+        mode: "In-person",
+        duration: 60,
+        fees: 2500,
+        paymentStatus: "Pending",
     },
 ];
 

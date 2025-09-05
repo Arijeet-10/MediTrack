@@ -1,9 +1,12 @@
-
 import type { GenerateLabReportOutput } from "@/ai/flows/generate-lab-report";
 
 export type PatientStatus = "Admitted" | "Under Observation" | "Discharged";
 export type Department = "Cardiology" | "Neurology" | "Pediatrics" | "Orthopedics" | "General";
 export type Gender = "Male" | "Female" | "Other";
+export type AppointmentStatus = "Confirmed" | "Pending" | "Cancelled" | "Completed";
+export type AppointmentMode = "In-person" | "Online" | "Telephonic";
+export type PaymentStatus = "Paid" | "Pending" | "Partially Paid";
+
 
 export interface Patient {
   id: string;
@@ -32,6 +35,11 @@ export interface Appointment {
   date: Date;
   time: string;
   reason: string;
+  status: AppointmentStatus;
+  mode: AppointmentMode;
+  duration: number; // in minutes
+  fees: number;
+  paymentStatus: PaymentStatus;
 }
 
 export interface MedicalRecord {

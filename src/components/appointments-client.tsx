@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import {
   Table,
   TableBody,
@@ -17,7 +17,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal, PlusCircle } from "lucide-react";
+import { MoreHorizontal, PlusCircle, Video, Phone, Building } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -54,9 +54,10 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useToast } from "@/hooks/use-toast";
-import type { Appointment, Patient, Doctor } from "@/lib/types";
+import type { Appointment, Patient, Doctor, AppointmentStatus, AppointmentMode, PaymentStatus } from "@/lib/types";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import { Badge } from "./ui/badge";
 
 interface AppointmentsClientProps {
   initialAppointments: Appointment[];
@@ -75,9 +76,60 @@ const formSchema = z.object({
     .min(1, "Time is required")
     .regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]\s(AM|PM)$/i, "Invalid time format (e.g., 10:00 AM)"),
   reason: z.string().min(1, "Reason for appointment is required"),
+  mode: z.enum(["In-person", "Online", "Telephonic"]),
+  duration: z.coerce.number().min(15, "Duration must be at least 15 minutes"),
+  fees: z.coerce.number().min(0, "Fees cannot be negative"),
+  status: z.enum(["Confirmed", "Pending", "Cancelled", "Completed"]),
+  paymentStatus: z.enum(["Paid", "Pending", "Partially Paid"]),
 });
 
 type FormValues = z.infer<typeof formSchema>;
+
+const ModeIcons: Record<AppointmentMode, React.ElementType> = {
+  "In-person": Building,
+  "Online": Video,
+  "Telephonic": Phone,
+}
+
+const getStatusBadgeVariant = (status: AppointmentStatus) => {
+    switch (status) {
+        case "Completed":
+            return "default";
+        case "Confirmed":
+            return "default";
+        case "Pending":
+            return "secondary";
+        case "Cancelled":
+            return "destructive";
+    }
+};
+
+const getPaymentStatusBadgeVariant = (status: PaymentStatus) => {
+    switch (status) {
+        case "Paid":
+            return "default";
+        case "Pending":
+            return "destructive";
+        case "Partially Paid":
+            return "secondary";
+    }
+};
+
+
+const getStatusRowClass = (status: AppointmentStatus) => {
+    switch(status) {
+        case 'Confirmed':
+            return 'bg-green-500/10';
+        case 'Pending':
+            return 'bg-yellow-500/10';
+        case 'Cancelled':
+            return 'bg-red-500/10 opacity-70';
+        case 'Completed':
+            return 'bg-blue-500/10';
+        default:
+            return '';
+    }
+}
 
 export function AppointmentsClient({
   initialAppointments,
@@ -86,12 +138,11 @@ export function AppointmentsClient({
 }: AppointmentsClientProps) {
   const [appointments, setAppointments] = useState(initialAppointments);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [statusFilter, setStatusFilter] = useState<"All" | AppointmentStatus>("All");
   const { toast } = useToast();
 
-  const getPatientName = (patientId: string) =>
-    patients.find((p) => p.id === patientId)?.name || "Unknown";
-  const getDoctorName = (doctorId: string) =>
-    doctors.find((d) => d.id === doctorId)?.name || "Unknown";
+  const getPatient = (patientId: string) => patients.find((p) => p.id === patientId);
+  const getDoctorName = (doctorId: string) => doctors.find((d) => d.id === doctorId)?.name || "Unknown";
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -100,8 +151,20 @@ export function AppointmentsClient({
       doctorId: "",
       time: "",
       reason: "",
+      mode: "In-person",
+      duration: 30,
+      fees: 500,
+      status: "Confirmed",
+      paymentStatus: "Pending",
     },
   });
+
+  const filteredAppointments = useMemo(() => {
+    if (statusFilter === "All") {
+      return appointments;
+    }
+    return appointments.filter(a => a.status === statusFilter);
+  }, [appointments, statusFilter]);
 
   const onSubmit = (data: FormValues) => {
     const newAppointment: Appointment = {
@@ -113,9 +176,9 @@ export function AppointmentsClient({
     form.reset();
     toast({
       title: "Appointment Scheduled",
-      description: `Appointment for ${getPatientName(
+      description: `Appointment for ${getPatient(
         newAppointment.patientId
-      )} with ${getDoctorName(newAppointment.doctorId)} has been scheduled.`,
+      )?.name} with ${getDoctorName(newAppointment.doctorId)} has been scheduled.`,
     });
   };
 
@@ -127,14 +190,26 @@ export function AppointmentsClient({
             Appointments
           </h1>
           <div className="ml-auto flex items-center gap-2">
+             <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as any)}>
+                <SelectTrigger className="w-[180px]">
+                    <SelectValue placeholder="Filter by status" />
+                </SelectTrigger>
+                <SelectContent>
+                    <SelectItem value="All">All Statuses</SelectItem>
+                    <SelectItem value="Confirmed">Confirmed</SelectItem>
+                    <SelectItem value="Pending">Pending</SelectItem>
+                    <SelectItem value="Completed">Completed</SelectItem>
+                    <SelectItem value="Cancelled">Cancelled</SelectItem>
+                </SelectContent>
+            </Select>
             <Button
               size="sm"
-              className="h-8 gap-1"
+              className="h-9 gap-1"
               onClick={() => setIsDialogOpen(true)}
             >
               <PlusCircle className="h-3.5 w-3.5" />
               <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                Schedule Appointment
+                Schedule
               </span>
             </Button>
           </div>
@@ -145,24 +220,44 @@ export function AppointmentsClient({
               <TableRow>
                 <TableHead>Patient</TableHead>
                 <TableHead>Doctor</TableHead>
-                <TableHead>Date</TableHead>
-                <TableHead>Time</TableHead>
-                <TableHead>Reason</TableHead>
+                <TableHead>Date & Time</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Mode</TableHead>
+                <TableHead>Fee</TableHead>
+                <TableHead>Payment</TableHead>
                 <TableHead>
                   <span className="sr-only">Actions</span>
                 </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {appointments.map((appointment) => (
-                <TableRow key={appointment.id}>
-                  <TableCell>
-                    {getPatientName(appointment.patientId)}
-                  </TableCell>
+              {filteredAppointments.map((appointment) => {
+                const patient = getPatient(appointment.patientId);
+                const ModeIcon = ModeIcons[appointment.mode];
+                return (
+                <TableRow key={appointment.id} className={cn(getStatusRowClass(appointment.status))}>
+                   <TableCell>
+                      <div className="font-medium">{patient?.name}</div>
+                      <div className="text-xs text-muted-foreground">{patient?.contact}</div>
+                   </TableCell>
                   <TableCell>{getDoctorName(appointment.doctorId)}</TableCell>
-                  <TableCell>{format(appointment.date, "PPP")}</TableCell>
-                  <TableCell>{appointment.time}</TableCell>
-                  <TableCell>{appointment.reason}</TableCell>
+                  <TableCell>
+                      <div>{format(appointment.date, "PPP")}</div>
+                      <div className="text-xs text-muted-foreground">{appointment.time} ({appointment.duration} min)</div>
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant={getStatusBadgeVariant(appointment.status)}>{appointment.status}</Badge>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                        <ModeIcon className="h-4 w-4 text-muted-foreground" />
+                        <span>{appointment.mode}</span>
+                    </div>
+                  </TableCell>
+                  <TableCell>Rs. {appointment.fees.toLocaleString("en-IN")}</TableCell>
+                   <TableCell>
+                     <Badge variant={getPaymentStatusBadgeVariant(appointment.paymentStatus)}>{appointment.paymentStatus}</Badge>
+                   </TableCell>
                   <TableCell>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
@@ -177,6 +272,7 @@ export function AppointmentsClient({
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                        <DropdownMenuItem>View Medical History</DropdownMenuItem>
                         <DropdownMenuItem>Reschedule</DropdownMenuItem>
                         <DropdownMenuItem className="text-destructive">
                           Cancel
@@ -185,13 +281,13 @@ export function AppointmentsClient({
                     </DropdownMenu>
                   </TableCell>
                 </TableRow>
-              ))}
+              )})}
             </TableBody>
           </Table>
         </div>
       </div>
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="sm:max-w-[480px]">
+        <DialogContent className="sm:max-w-2xl">
           <DialogHeader>
             <DialogTitle>Schedule New Appointment</DialogTitle>
             <DialogDescription>
@@ -203,6 +299,7 @@ export function AppointmentsClient({
               onSubmit={form.handleSubmit(onSubmit)}
               className="space-y-4 py-4"
             >
+             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField
                 control={form.control}
                 name="patientId"
@@ -257,7 +354,7 @@ export function AppointmentsClient({
                   </FormItem>
                 )}
               />
-              <FormField
+               <FormField
                 control={form.control}
                 name="date"
                 render={({ field }) => (
@@ -311,6 +408,78 @@ export function AppointmentsClient({
                   </FormItem>
                 )}
               />
+              <FormField
+                control={form.control}
+                name="duration"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Duration (minutes)</FormLabel>
+                    <FormControl>
+                      <Input type="number" placeholder="e.g., 30" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+               <FormField
+                control={form.control}
+                name="fees"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Consultation Fee</FormLabel>
+                    <FormControl>
+                      <Input type="number" placeholder="e.g., 500" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+               <FormField
+                control={form.control}
+                name="mode"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Mode</FormLabel>
+                     <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select mode" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="In-person">In-person</SelectItem>
+                        <SelectItem value="Online">Online</SelectItem>
+                        <SelectItem value="Telephonic">Telephonic</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="status"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Status</FormLabel>
+                     <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select status" />
+                        </Trigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="Confirmed">Confirmed</SelectItem>
+                        <SelectItem value="Pending">Pending</SelectItem>
+                        <SelectItem value="Cancelled">Cancelled</SelectItem>
+                        <SelectItem value="Completed">Completed</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+             </div>
               <FormField
                 control={form.control}
                 name="reason"
