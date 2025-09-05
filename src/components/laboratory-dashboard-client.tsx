@@ -17,7 +17,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal, PlusCircle, CheckCircle, Clock, XCircle, FlaskConical, Users } from "lucide-react";
+import { MoreHorizontal, PlusCircle, CheckCircle, Clock, XCircle, FlaskConical, Users, Printer } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import type { LabAppointment, Patient } from "@/lib/types";
 import { format } from "date-fns";
@@ -26,6 +26,7 @@ import { LabAppointmentsClient } from "./lab-appointments-client";
 import { UserNav } from "./user-nav";
 import { Logo } from "./icons";
 import Link from "next/link";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "./ui/dialog";
 
 interface LaboratoryDashboardClientProps {
   initialLabAppointments: LabAppointment[];
@@ -37,15 +38,31 @@ export function LaboratoryDashboardClient({
   patients,
 }: LaboratoryDashboardClientProps) {
 
+  const [isReportOpen, setIsReportOpen] = useState(false);
+  const [selectedAppointment, setSelectedAppointment] = useState<LabAppointment | null>(null);
+  const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
+
+
   const statusCounts = initialLabAppointments.reduce((acc, appt) => {
     acc[appt.status] = (acc[appt.status] || 0) + 1;
     return acc;
   }, { Scheduled: 0, Completed: 0, Cancelled: 0 });
 
+  const handleViewReport = (appointment: LabAppointment) => {
+    const patient = patients.find(p => p.id === appointment.patientId);
+    setSelectedAppointment(appointment);
+    setSelectedPatient(patient || null);
+    setIsReportOpen(true);
+  }
+
+  const handlePrint = () => {
+    window.print();
+  }
+
 
   return (
-     <div className="min-h-screen w-full bg-background">
-       <header className="sticky top-0 z-10 flex h-16 items-center gap-4 border-b bg-background px-4 md:px-6">
+     <div className="min-h-screen w-full bg-background printable-area">
+       <header className="sticky top-0 z-10 flex h-16 items-center gap-4 border-b bg-background px-4 md:px-6 no-print">
          <Link href="#" className="flex items-center gap-2 font-semibold">
           <Logo className="h-6 w-6" />
           <span>MediTrack - Laboratory Portal</span>
@@ -54,7 +71,7 @@ export function LaboratoryDashboardClient({
           <UserNav />
         </div>
       </header>
-      <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
+      <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8 no-print">
         <header className="flex items-center justify-between">
             <h1 className="text-lg font-semibold md:text-2xl font-headline">
                 Laboratory Dashboard
@@ -98,8 +115,80 @@ export function LaboratoryDashboardClient({
                 </CardContent>
             </Card>
         </div>
-        <LabAppointmentsClient initialLabAppointments={initialLabAppointments} patients={patients} />
+        <LabAppointmentsClient
+          initialLabAppointments={initialLabAppointments}
+          patients={patients}
+          onViewReport={handleViewReport}
+        />
       </main>
+
+      <Dialog open={isReportOpen} onOpenChange={setIsReportOpen}>
+          <DialogContent className="sm:max-w-3xl printable-area">
+              <DialogHeader>
+                  <DialogTitle className="font-headline text-2xl">Lab Report</DialogTitle>
+                  <DialogDescription>
+                      Report for {selectedAppointment?.testName} - Generated on {format(new Date(), "PPP")}
+                  </DialogDescription>
+              </DialogHeader>
+              {selectedPatient && selectedAppointment && (
+                  <div className="space-y-6 py-4 text-sm">
+                      <div className="grid grid-cols-2 gap-4 border-b pb-4">
+                          <div>
+                              <h3 className="font-semibold">Patient Information</h3>
+                              <p><strong>Name:</strong> {selectedPatient.name}</p>
+                              <p><strong>Age:</strong> {selectedPatient.age}</p>
+                              <p><strong>Gender:</strong> {selectedPatient.gender}</p>
+                          </div>
+                          <div>
+                              <h3 className="font-semibold">Test Details</h3>
+                              <p><strong>Test Name:</strong> {selectedAppointment.testName}</p>
+                              <p><strong>Appointment ID:</strong> {selectedAppointment.id}</p>
+                              <p><strong>Date of Test:</strong> {format(selectedAppointment.date, "PPP")}</p>
+                          </div>
+                      </div>
+
+                      <div>
+                          <h3 className="font-semibold text-lg mb-2">Test Results</h3>
+                          <Table>
+                              <TableHeader>
+                                  <TableRow>
+                                      <TableHead>Analyte</TableHead>
+                                      <TableHead>Result</TableHead>
+                                      <TableHead>Reference Range</TableHead>
+                                  </TableRow>
+                              </TableHeader>
+                              <TableBody>
+                                  <TableRow>
+                                      <TableCell>Hemoglobin</TableCell>
+                                      <TableCell>14.5 g/dL</TableCell>
+                                      <TableCell>13.5-17.5 g/dL</TableCell>
+                                  </TableRow>
+                                   <TableRow>
+                                      <TableCell>WBC Count</TableCell>
+                                      <TableCell>7,500 /mcL</TableCell>
+                                      <TableCell>4,500-11,000 /mcL</TableCell>
+                                  </TableRow>
+                                   <TableRow>
+                                      <TableCell>Platelet Count</TableCell>
+                                      <TableCell>250,000 /mcL</TableCell>
+                                      <TableCell>150,000-450,000 /mcL</TableCell>
+                                  </TableRow>
+                              </TableBody>
+                          </Table>
+                      </div>
+
+                      <div className="border-t pt-4">
+                          <h3 className="font-semibold mb-2">Doctor's Notes</h3>
+                          <p className="text-muted-foreground">Results are within normal limits. No immediate concerns noted.</p>
+                      </div>
+                  </div>
+              )}
+              <DialogFooter className="no-print">
+                  <Button variant="outline" onClick={() => setIsReportOpen(false)}>Close</Button>
+                  <Button onClick={handlePrint}><Printer className="mr-2 h-4 w-4" />Print Report</Button>
+              </DialogFooter>
+          </DialogContent>
+      </Dialog>
     </div>
   );
 }

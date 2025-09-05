@@ -15,6 +15,7 @@ import {
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { MoreHorizontal, PlusCircle } from "lucide-react";
@@ -61,6 +62,7 @@ import { cn } from "@/lib/utils";
 interface LabAppointmentsClientProps {
   initialLabAppointments: LabAppointment[];
   patients: Patient[];
+  onViewReport?: (appointment: LabAppointment) => void;
 }
 
 const formSchema = z.object({
@@ -76,6 +78,7 @@ type FormValues = z.infer<typeof formSchema>;
 export function LabAppointmentsClient({
   initialLabAppointments,
   patients,
+  onViewReport,
 }: LabAppointmentsClientProps) {
   const [labAppointments, setLabAppointments] =
     useState(initialLabAppointments);
@@ -173,7 +176,12 @@ export function LabAppointmentsClient({
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                        <DropdownMenuItem>View Results</DropdownMenuItem>
+                        {onViewReport && appt.status === 'Completed' && (
+                          <DropdownMenuItem onClick={() => onViewReport(appt)}>
+                            View Report
+                          </DropdownMenuItem>
+                        )}
+                        <DropdownMenuSeparator />
                         <DropdownMenuItem>Reschedule</DropdownMenuItem>
                         <DropdownMenuItem className="text-destructive">
                           Cancel
@@ -205,8 +213,7 @@ export function LabAppointmentsClient({
                 name="patientId"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Patient</FormLabel>
-                    <Select
+                    <FormLabel>Patient</FormLabel>                    <Select
                       onValueChange={field.onChange}
                       defaultValue={field.value}
                     >
