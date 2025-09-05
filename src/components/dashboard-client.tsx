@@ -1,3 +1,4 @@
+
 "use client";
 
 import {
@@ -87,20 +88,6 @@ export function DashboardClient({
         <h1 className="text-lg font-semibold md:text-2xl font-headline">
           Dashboard
         </h1>
-        <div className="flex items-center gap-2">
-           <Button variant="outline" size="sm" asChild>
-            <Link href="/dashboard/billing">
-              <CreditCard className="mr-2" />
-              Go to Billing
-            </Link>
-          </Button>
-          <Button size="sm" asChild>
-            <Link href="/dashboard/lab-appointments">
-              <FlaskConical className="mr-2" />
-              Lab Appointments
-            </Link>
-          </Button>
-        </div>
       </header>
       <div className="grid gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-4">
         <Card>
@@ -108,7 +95,7 @@ export function DashboardClient({
             <CardTitle className="text-sm font-medium">
               Total Revenue
             </CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
+            <CreditCard className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">Rs. {totalRevenue.toLocaleString("en-IN")}</div>
