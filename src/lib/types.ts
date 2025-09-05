@@ -1,3 +1,4 @@
+
 export type PatientStatus = "Admitted" | "Under Observation" | "Discharged";
 export type Department = "Cardiology" | "Neurology" | "Pediatrics" | "Orthopedics" | "General";
 export type Gender = "Male" | "Female" | "Other";

@@ -1,4 +1,5 @@
-import type { Patient, Doctor, Department, Appointment, Billing, LabAppointment } from "./types";
+
+import type { Patient, Doctor, Department, Appointment, Billing, LabAppointment, MedicalRecord } from "./types";
 
 export const departments: Department[] = [
   "Cardiology",
@@ -115,4 +116,32 @@ export const labAppointments: LabAppointment[] = [
     { id: "lab1", patientId: "pat1", testName: "Blood Panel", date: new Date("2024-08-11"), status: "Scheduled" },
     { id: "lab2", patientId: "pat2", testName: "MRI Scan", date: new Date("2024-08-12"), status: "Scheduled" },
     { id: "lab3", patientId: "pat5", testName: "X-Ray", date: new Date("2024-08-09"), status: "Completed" },
+];
+
+export const medicalRecords: MedicalRecord[] = [
+    {
+        id: "rec1",
+        patientId: "pat1",
+        date: new Date("2024-08-01"),
+        type: "Note",
+        title: "Initial Consultation",
+        content: "Patient presents with chest pain and shortness of breath. Recommended further tests.",
+    },
+    {
+        id: "rec2",
+        patientId: "pat1",
+        date: new Date("2024-08-05"),
+        type: "Report",
+        title: "ECG Report",
+        content: "ECG shows signs of arrhythmia.",
+        fileUrl: "#",
+    },
+    {
+        id: "rec3",
+        patientId: "pat2",
+        date: new Date("2024-07-20"),
+        type: "Note",
+        title: "Migraine Follow-up",
+        content: "Patient reports reduced frequency of migraines with new medication.",
+    }
 ];

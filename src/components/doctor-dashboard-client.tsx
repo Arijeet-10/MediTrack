@@ -1,6 +1,7 @@
 
 "use client";
 
+import { useState } from "react";
 import {
   Calendar,
   Users,
@@ -29,6 +30,7 @@ import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { UserNav } from "./user-nav";
 import { Logo } from "./icons";
+import { PatientDetailsDialog } from "./patient-details-dialog";
 
 
 interface DoctorDashboardClientProps {
@@ -41,14 +43,23 @@ export function DoctorDashboardClient({
   patients,
 }: DoctorDashboardClientProps) {
 
+  const [isPatientDetailsOpen, setIsPatientDetailsOpen] = useState(false);
+  const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
+
   const getPatient = (patientId: string) => patients.find(p => p.id === patientId);
   const upcomingAppointments = appointments.filter(a => a.date >= new Date());
 
+  const handleViewDetails = (patient: Patient) => {
+    setSelectedPatient(patient);
+    setIsPatientDetailsOpen(true);
+  };
+
 
   return (
-    <div className="min-h-screen w-full bg-background">
-       <header className="sticky top-0 z-10 flex h-16 items-center gap-4 border-b bg-background px-4 md:px-6">
-         <Link href="#" className="flex items-center gap-2 font-semibold">
+    <>
+      <div className="min-h-screen w-full bg-background">
+        <header className="sticky top-0 z-10 flex h-16 items-center gap-4 border-b bg-background px-4 md:px-6">
+          <Link href="#" className="flex items-center gap-2 font-semibold">
           <Logo className="h-6 w-6" />
           <span>MediTrack - Doctor Portal</span>
         </Link>
@@ -135,6 +146,7 @@ export function DoctorDashboardClient({
                 <TableBody>
                   {upcomingAppointments.slice(0, 5).map((appointment) => {
                     const patient = getPatient(appointment.patientId);
+                    if (!patient) return null;
                     return (
                     <TableRow key={appointment.id}>
                       <TableCell>
@@ -159,7 +171,7 @@ export function DoctorDashboardClient({
                       </TableCell>
                       <TableCell >{appointment.reason}</TableCell>
                       <TableCell className="text-right">
-                          <Button variant="outline" size="sm">
+                          <Button variant="outline" size="sm" onClick={() => handleViewDetails(patient)}>
                               View Details
                           </Button>
                       </TableCell>
@@ -171,5 +183,13 @@ export function DoctorDashboardClient({
           </Card>
       </main>
     </div>
+    {selectedPatient && (
+        <PatientDetailsDialog
+            patient={selectedPatient}
+            isOpen={isPatientDetailsOpen}
+            onOpenChange={setIsPatientDetailsOpen}
+        />
+    )}
+    </>
   );
 }
