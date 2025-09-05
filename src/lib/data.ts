@@ -90,7 +90,7 @@ export const appointments: Appointment[] = [
         id: "apt3",
         patientId: "pat4",
         doctorId: "doc3",
-        date: new date("2024-08-11T09:30:00Z"),
+        date: new Date("2024-08-11T09:30:00Z"),
         time: "09:30 AM",
         reason: "Checkup",
     },
