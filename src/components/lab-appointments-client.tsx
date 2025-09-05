@@ -62,7 +62,7 @@ import { cn } from "@/lib/utils";
 interface LabAppointmentsClientProps {
   initialLabAppointments: LabAppointment[];
   patients: Patient[];
-  onViewReport?: (appointment: LabAppointment) => void;
+  onGenerateReport?: (appointment: LabAppointment) => void;
 }
 
 const formSchema = z.object({
@@ -78,7 +78,7 @@ type FormValues = z.infer<typeof formSchema>;
 export function LabAppointmentsClient({
   initialLabAppointments,
   patients,
-  onViewReport,
+  onGenerateReport,
 }: LabAppointmentsClientProps) {
   const [labAppointments, setLabAppointments] =
     useState(initialLabAppointments);
@@ -157,7 +157,7 @@ export function LabAppointmentsClient({
               </TableRow>
             </TableHeader>
             <TableBody>
-              {labAppointments.map((appt) => (
+              {initialLabAppointments.map((appt) => (
                 <TableRow key={appt.id}>
                   <TableCell className="font-medium">{appt.id}</TableCell>
                   <TableCell>{getPatientName(appt.patientId)}</TableCell>
@@ -176,9 +176,9 @@ export function LabAppointmentsClient({
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                        {onViewReport && appt.status === 'Completed' && (
-                          <DropdownMenuItem onClick={() => onViewReport(appt)}>
-                            View Report
+                         {onGenerateReport && appt.status !== 'Cancelled' && (
+                          <DropdownMenuItem onClick={() => onGenerateReport(appt)}>
+                            {appt.status === 'Completed' ? 'View Report' : 'Generate Report'}
                           </DropdownMenuItem>
                         )}
                         <DropdownMenuSeparator />

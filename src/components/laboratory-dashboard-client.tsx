@@ -9,16 +9,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal, PlusCircle, CheckCircle, Clock, XCircle, FlaskConical, Users, Printer } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { FlaskConical, Users, Printer, CheckCircle, Clock } from "lucide-react";
 import type { LabAppointment, Patient } from "@/lib/types";
 import { format } from "date-fns";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
@@ -27,6 +19,10 @@ import { UserNav } from "./user-nav";
 import { Logo } from "./icons";
 import Link from "next/link";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "./ui/dialog";
+import { useToast } from "@/hooks/use-toast";
+import { runGenerateLabReport } from "@/app/dashboard/laboratory/actions";
+import type { GenerateLabReportOutput } from "@/ai/flows/generate-lab-report";
+import { Skeleton } from "./ui/skeleton";
 
 interface LaboratoryDashboardClientProps {
   initialLabAppointments: LabAppointment[];
@@ -38,21 +34,50 @@ export function LaboratoryDashboardClient({
   patients,
 }: LaboratoryDashboardClientProps) {
 
+  const [labAppointments, setLabAppointments] = useState(initialLabAppointments);
   const [isReportOpen, setIsReportOpen] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [generatedReport, setGeneratedReport] = useState<GenerateLabReportOutput | null>(null);
   const [selectedAppointment, setSelectedAppointment] = useState<LabAppointment | null>(null);
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
+  const { toast } = useToast();
 
 
-  const statusCounts = initialLabAppointments.reduce((acc, appt) => {
+  const statusCounts = labAppointments.reduce((acc, appt) => {
     acc[appt.status] = (acc[appt.status] || 0) + 1;
     return acc;
   }, { Scheduled: 0, Completed: 0, Cancelled: 0 });
 
-  const handleViewReport = (appointment: LabAppointment) => {
+  const handleGenerateReport = async (appointment: LabAppointment) => {
     const patient = patients.find(p => p.id === appointment.patientId);
     setSelectedAppointment(appointment);
     setSelectedPatient(patient || null);
     setIsReportOpen(true);
+    setIsGenerating(true);
+    setGeneratedReport(null);
+
+    try {
+      const report = await runGenerateLabReport({ testName: appointment.testName });
+      setGeneratedReport(report);
+      // Update appointment status to 'Completed'
+      setLabAppointments(currentAppointments =>
+        currentAppointments.map(appt =>
+          appt.id === appointment.id ? { ...appt, status: 'Completed' } : appt
+        )
+      );
+      toast({
+        title: "Report Generated",
+        description: `Lab report for ${appointment.testName} has been successfully generated.`,
+      });
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Generation Failed",
+        description: "Could not generate the lab report. Please try again.",
+      });
+    } finally {
+      setIsGenerating(false);
+    }
   }
 
   const handlePrint = () => {
@@ -84,7 +109,7 @@ export function LaboratoryDashboardClient({
                     <FlaskConical className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                    <div className="text-2xl font-bold">{initialLabAppointments.length}</div>
+                    <div className="text-2xl font-bold">{labAppointments.length}</div>
                     <p className="text-xs text-muted-foreground">
                        Across all patients.
                     </p>
@@ -116,9 +141,9 @@ export function LaboratoryDashboardClient({
             </Card>
         </div>
         <LabAppointmentsClient
-          initialLabAppointments={initialLabAppointments}
+          initialLabAppointments={labAppointments}
           patients={patients}
-          onViewReport={handleViewReport}
+          onGenerateReport={handleGenerateReport}
         />
       </main>
 
@@ -146,46 +171,52 @@ export function LaboratoryDashboardClient({
                               <p><strong>Date of Test:</strong> {format(selectedAppointment.date, "PPP")}</p>
                           </div>
                       </div>
+                      
+                      {isGenerating && (
+                        <div className="space-y-4">
+                            <h3 className="font-semibold text-lg mb-2">Generating Results...</h3>
+                            <Skeleton className="h-8 w-full" />
+                            <Skeleton className="h-8 w-full" />
+                            <Skeleton className="h-8 w-full" />
+                            <Skeleton className="h-20 w-full" />
+                        </div>
+                      )}
 
-                      <div>
-                          <h3 className="font-semibold text-lg mb-2">Test Results</h3>
-                          <Table>
-                              <TableHeader>
-                                  <TableRow>
-                                      <TableHead>Analyte</TableHead>
-                                      <TableHead>Result</TableHead>
-                                      <TableHead>Reference Range</TableHead>
-                                  </TableRow>
-                              </TableHeader>
-                              <TableBody>
-                                  <TableRow>
-                                      <TableCell>Hemoglobin</TableCell>
-                                      <TableCell>14.5 g/dL</TableCell>
-                                      <TableCell>13.5-17.5 g/dL</TableCell>
-                                  </TableRow>
-                                   <TableRow>
-                                      <TableCell>WBC Count</TableCell>
-                                      <TableCell>7,500 /mcL</TableCell>
-                                      <TableCell>4,500-11,000 /mcL</TableCell>
-                                  </TableRow>
-                                   <TableRow>
-                                      <TableCell>Platelet Count</TableCell>
-                                      <TableCell>250,000 /mcL</TableCell>
-                                      <TableCell>150,000-450,000 /mcL</TableCell>
-                                  </TableRow>
-                              </TableBody>
-                          </Table>
-                      </div>
+                      {generatedReport && (
+                        <>
+                          <div>
+                              <h3 className="font-semibold text-lg mb-2">Test Results</h3>
+                              <Table>
+                                  <TableHeader>
+                                      <TableRow>
+                                          <TableHead>Analyte</TableHead>
+                                          <TableHead>Result</TableHead>
+                                          <TableHead>Reference Range</TableHead>
+                                      </TableRow>
+                                  </TableHeader>
+                                  <TableBody>
+                                      {generatedReport.results.map((res, i) => (
+                                          <TableRow key={i}>
+                                              <TableCell>{res.analyte}</TableCell>
+                                              <TableCell>{res.result}</TableCell>
+                                              <TableCell>{res.referenceRange}</TableCell>
+                                          </TableRow>
+                                      ))}
+                                  </TableBody>
+                              </Table>
+                          </div>
 
-                      <div className="border-t pt-4">
-                          <h3 className="font-semibold mb-2">Doctor's Notes</h3>
-                          <p className="text-muted-foreground">Results are within normal limits. No immediate concerns noted.</p>
-                      </div>
+                          <div className="border-t pt-4">
+                              <h3 className="font-semibold mb-2">Interpretation</h3>
+                              <p className="text-muted-foreground">{generatedReport.interpretation}</p>
+                          </div>
+                        </>
+                      )}
                   </div>
               )}
               <DialogFooter className="no-print">
                   <Button variant="outline" onClick={() => setIsReportOpen(false)}>Close</Button>
-                  <Button onClick={handlePrint}><Printer className="mr-2 h-4 w-4" />Print Report</Button>
+                  <Button onClick={handlePrint} disabled={isGenerating || !generatedReport}><Printer className="mr-2 h-4 w-4" />Print Report</Button>
               </DialogFooter>
           </DialogContent>
       </Dialog>
