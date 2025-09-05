@@ -21,6 +21,9 @@ import { MoreHorizontal, Pill, CheckCircle, Clock, XCircle, Package } from "luci
 import { Badge } from "@/components/ui/badge";
 import type { Patient } from "@/lib/types";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
+import { UserNav } from "./user-nav";
+import { Logo } from "./icons";
+import Link from "next/link";
 
 type PrescriptionStatus = "Pending" | "Filled" | "Cancelled";
 
@@ -64,7 +67,17 @@ export function PharmacistDashboardClient({
   }, { Pending: 0, Filled: 0, Cancelled: 0 });
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="min-h-screen w-full bg-background">
+       <header className="sticky top-0 z-10 flex h-16 items-center gap-4 border-b bg-background px-4 md:px-6">
+         <Link href="#" className="flex items-center gap-2 font-semibold">
+          <Logo className="h-6 w-6" />
+          <span>MediTrack - Pharmacist Portal</span>
+        </Link>
+        <div className="ml-auto">
+          <UserNav />
+        </div>
+      </header>
+      <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
         <header className="flex items-center justify-between">
             <h1 className="text-lg font-semibold md:text-2xl font-headline">
                 Pharmacist Dashboard
@@ -113,7 +126,7 @@ export function PharmacistDashboardClient({
             <CardHeader>
                 <CardTitle>Prescription Queue</CardTitle>
                 <CardDescription>Manage and track patient prescriptions.</CardDescription>
-            </CardHeader>
+            </Header>
             <CardContent>
                 <Table>
                   <TableHeader>
@@ -160,6 +173,7 @@ export function PharmacistDashboardClient({
                 </Table>
             </CardContent>
         </Card>
+      </main>
     </div>
   );
 }

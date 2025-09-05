@@ -1,4 +1,3 @@
-import { AppShell } from "@/components/app-shell";
 import { PharmacistDashboardClient } from "@/components/pharmacist-dashboard-client";
 import { patients } from "@/lib/data";
 
@@ -13,11 +12,9 @@ const prescriptions = [
 
 export default function PharmacistDashboardPage() {
   return (
-    <AppShell>
       <PharmacistDashboardClient
         initialPrescriptions={prescriptions}
         patients={patients}
       />
-    </AppShell>
   );
 }

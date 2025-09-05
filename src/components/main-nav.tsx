@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
 
-const adminMenuItems = [
+const menuItems = [
   {
     href: "/dashboard",
     label: "Dashboard",
@@ -47,65 +47,8 @@ const adminMenuItems = [
   },
 ];
 
-const doctorMenuItems = [
-    {
-        href: "/dashboard/doctor",
-        label: "Dashboard",
-        icon: LayoutDashboard,
-    },
-    {
-        href: "/dashboard/appointments",
-        label: "Appointments",
-        icon: Calendar,
-    },
-    {
-        href: "/dashboard/ai-diagnosis",
-        label: "AI Diagnosis",
-        icon: BrainCircuit,
-    }
-]
-
-const labMenuItems = [
-    {
-        href: "/dashboard/laboratory",
-        label: "Dashboard",
-        icon: LayoutDashboard,
-    },
-    {
-        href: "/dashboard/lab-appointments",
-        label: "Lab Appointments",
-        icon: FlaskConical,
-    }
-]
-
-const pharmacistMenuItems = [
-    {
-        href: "/dashboard/pharmacist",
-        label: "Dashboard",
-        icon: LayoutDashboard,
-    },
-    {
-        href: "/dashboard/pharmacist/prescriptions",
-        label: "Prescriptions",
-        icon: Pill,
-    }
-]
-
-
-
 export function MainNav() {
   const pathname = usePathname();
-
-  let menuItems = adminMenuItems;
-
-  if (pathname.startsWith('/dashboard/doctor')) {
-    menuItems = doctorMenuItems;
-  } else if (pathname.startsWith('/dashboard/laboratory')) {
-    menuItems = labMenuItems;
-  } else if (pathname.startsWith('/dashboard/pharmacist')) {
-    menuItems = pharmacistMenuItems;
-  }
-
 
   return (
     <SidebarMenu>

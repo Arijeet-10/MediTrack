@@ -23,6 +23,9 @@ import type { LabAppointment, Patient } from "@/lib/types";
 import { format } from "date-fns";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import { LabAppointmentsClient } from "./lab-appointments-client";
+import { UserNav } from "./user-nav";
+import { Logo } from "./icons";
+import Link from "next/link";
 
 interface LaboratoryDashboardClientProps {
   initialLabAppointments: LabAppointment[];
@@ -41,7 +44,17 @@ export function LaboratoryDashboardClient({
 
 
   return (
-    <div className="flex flex-col gap-4">
+     <div className="min-h-screen w-full bg-background">
+       <header className="sticky top-0 z-10 flex h-16 items-center gap-4 border-b bg-background px-4 md:px-6">
+         <Link href="#" className="flex items-center gap-2 font-semibold">
+          <Logo className="h-6 w-6" />
+          <span>MediTrack - Laboratory Portal</span>
+        </Link>
+        <div className="ml-auto">
+          <UserNav />
+        </div>
+      </header>
+      <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
         <header className="flex items-center justify-between">
             <h1 className="text-lg font-semibold md:text-2xl font-headline">
                 Laboratory Dashboard
@@ -86,6 +99,7 @@ export function LaboratoryDashboardClient({
             </Card>
         </div>
         <LabAppointmentsClient initialLabAppointments={initialLabAppointments} patients={patients} />
+      </main>
     </div>
   );
 }

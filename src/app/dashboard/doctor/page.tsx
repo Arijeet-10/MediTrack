@@ -1,4 +1,3 @@
-import { AppShell } from "@/components/app-shell";
 import { DoctorDashboardClient } from "@/components/doctor-dashboard-client";
 import { patients, appointments } from "@/lib/data";
 
@@ -9,11 +8,9 @@ export default function DoctorDashboardPage() {
   const doctorPatients = patients.filter(p => patientIds.has(p.id));
 
   return (
-    <AppShell>
       <DoctorDashboardClient
         appointments={doctorAppointments}
         patients={doctorPatients}
       />
-    </AppShell>
   );
 }
