@@ -60,6 +60,8 @@ export interface MedicalRecord {
 export interface Billing {
   id: string;
   patientId: string;
+  appointmentId: string;
+  doctorId: string;
   amount: number;
   date: Date;
   status: BillingStatus;
