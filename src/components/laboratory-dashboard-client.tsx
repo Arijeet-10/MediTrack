@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -10,8 +11,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { FlaskConical, Users, Printer, CheckCircle, Clock } from "lucide-react";
-import type { LabAppointment, Patient } from "@/lib/types";
+import { FlaskConical, Users, Printer, CheckCircle, Clock, FileText, MoreHorizontal, Sparkles, FileEdit, UserCog, Ban } from "lucide-react";
+import type { LabAppointment, Patient, Analyte } from "@/lib/types";
 import { format } from "date-fns";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import { LabAppointmentsClient } from "./lab-appointments-client";
@@ -23,6 +24,9 @@ import { useToast } from "@/hooks/use-toast";
 import { runGenerateLabReport } from "@/app/dashboard/laboratory/actions";
 import type { GenerateLabReportOutput } from "@/ai/flows/generate-lab-report";
 import { Skeleton } from "./ui/skeleton";
+import { Input } from "./ui/input";
+import { Textarea } from "./ui/textarea";
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "./ui/dropdown-menu";
 
 interface LaboratoryDashboardClientProps {
   initialLabAppointments: LabAppointment[];
@@ -48,26 +52,32 @@ export function LaboratoryDashboardClient({
     return acc;
   }, { Scheduled: 0, Completed: 0, Cancelled: 0 });
 
-  const handleGenerateReport = async (appointment: LabAppointment) => {
+  const handleCreateOrViewReport = (appointment: LabAppointment) => {
     const patient = patients.find(p => p.id === appointment.patientId);
     setSelectedAppointment(appointment);
     setSelectedPatient(patient || null);
+    
+    // If report data already exists, set it. Otherwise, clear it.
+    if (appointment.reportData) {
+        setGeneratedReport(appointment.reportData);
+    } else {
+        setGeneratedReport(null);
+    }
+
     setIsReportOpen(true);
+  }
+
+  const handleGenerateWithAI = async () => {
+    if (!selectedAppointment) return;
     setIsGenerating(true);
     setGeneratedReport(null);
 
     try {
-      const report = await runGenerateLabReport({ testName: appointment.testName });
+      const report = await runGenerateLabReport({ testName: selectedAppointment.testName });
       setGeneratedReport(report);
-      // Update appointment status to 'Completed'
-      setLabAppointments(currentAppointments =>
-        currentAppointments.map(appt =>
-          appt.id === appointment.id ? { ...appt, status: 'Completed' } : appt
-        )
-      );
       toast({
-        title: "Report Generated",
-        description: `Lab report for ${appointment.testName} has been successfully generated.`,
+        title: "AI Report Generated",
+        description: "Review and save the results.",
       });
     } catch (error) {
       toast({
@@ -79,6 +89,37 @@ export function LaboratoryDashboardClient({
       setIsGenerating(false);
     }
   }
+
+  const handleSaveReport = () => {
+    if (!selectedAppointment || !generatedReport) return;
+    
+    setLabAppointments(currentAppointments =>
+      currentAppointments.map(appt =>
+        appt.id === selectedAppointment.id 
+          ? { ...appt, status: 'Completed', reportData: generatedReport } 
+          : appt
+      )
+    );
+    
+    setIsReportOpen(false);
+    toast({
+        title: "Report Saved",
+        description: `Lab report for ${selectedAppointment.testName} has been saved.`,
+    });
+  };
+
+  const handleAnalyteChange = (index: number, field: keyof Analyte, value: string) => {
+    if (!generatedReport) return;
+    const newResults = [...generatedReport.results];
+    newResults[index] = {...newResults[index], [field]: value };
+    setGeneratedReport({...generatedReport, results: newResults});
+  }
+
+  const handleInterpretationChange = (value: string) => {
+    if (!generatedReport) return;
+    setGeneratedReport({...generatedReport, interpretation: value});
+  }
+
 
   const handlePrint = () => {
     window.print();
@@ -143,16 +184,16 @@ export function LaboratoryDashboardClient({
         <LabAppointmentsClient
           initialLabAppointments={labAppointments}
           patients={patients}
-          onGenerateReport={handleGenerateReport}
+          onCreateOrViewReport={handleCreateOrViewReport}
         />
       </main>
 
       <Dialog open={isReportOpen} onOpenChange={setIsReportOpen}>
-          <DialogContent className="sm:max-w-3xl printable-area">
+          <DialogContent className="sm:max-w-4xl printable-area">
               <DialogHeader>
-                  <DialogTitle className="font-headline text-2xl">Lab Report</DialogTitle>
+                  <DialogTitle className="font-headline text-2xl">Lab Report Editor</DialogTitle>
                   <DialogDescription>
-                      Report for {selectedAppointment?.testName} - Generated on {format(new Date(), "PPP")}
+                      Create or edit the report for {selectedAppointment?.testName}. Generated on {format(new Date(), "PPP")}
                   </DialogDescription>
               </DialogHeader>
               {selectedPatient && selectedAppointment && (
@@ -174,7 +215,7 @@ export function LaboratoryDashboardClient({
                       
                       {isGenerating && (
                         <div className="space-y-4">
-                            <h3 className="font-semibold text-lg mb-2">Generating Results...</h3>
+                            <h3 className="font-semibold text-lg mb-2">Generating with AI...</h3>
                             <Skeleton className="h-8 w-full" />
                             <Skeleton className="h-8 w-full" />
                             <Skeleton className="h-8 w-full" />
@@ -182,41 +223,63 @@ export function LaboratoryDashboardClient({
                         </div>
                       )}
 
+                      {!generatedReport && !isGenerating && (
+                        <div className="text-center py-12">
+                            <p className="text-muted-foreground mb-4">You can manually create the report or generate one with AI.</p>
+                            <Button onClick={handleGenerateWithAI} disabled={isGenerating}>
+                                <Sparkles className="mr-2 h-4 w-4" />
+                                Generate with AI
+                            </Button>
+                        </div>
+                      )}
+
                       {generatedReport && (
-                        <>
+                        <div className="space-y-6">
                           <div>
                               <h3 className="font-semibold text-lg mb-2">Test Results</h3>
                               <Table>
                                   <TableHeader>
                                       <TableRow>
-                                          <TableHead>Analyte</TableHead>
-                                          <TableHead>Result</TableHead>
-                                          <TableHead>Reference Range</TableHead>
+                                          <TableHead className="w-1/3">Analyte</TableHead>
+                                          <TableHead className="w-1/3">Result</TableHead>
+                                          <TableHead className="w-1/3">Reference Range</TableHead>
                                       </TableRow>
                                   </TableHeader>
                                   <TableBody>
                                       {generatedReport.results.map((res, i) => (
                                           <TableRow key={i}>
-                                              <TableCell>{res.analyte}</TableCell>
-                                              <TableCell>{res.result}</TableCell>
-                                              <TableCell>{res.referenceRange}</TableCell>
+                                              <TableCell><Input value={res.analyte} onChange={(e) => handleAnalyteChange(i, 'analyte', e.target.value)} /></TableCell>
+                                              <TableCell><Input value={res.result} onChange={(e) => handleAnalyteChange(i, 'result', e.target.value)}/></TableCell>
+                                              <TableCell><Input value={res.referenceRange} onChange={(e) => handleAnalyteChange(i, 'referenceRange', e.target.value)}/></TableCell>
                                           </TableRow>
                                       ))}
                                   </TableBody>
                               </Table>
                           </div>
 
-                          <div className="border-t pt-4">
+                          <div className="pt-4">
                               <h3 className="font-semibold mb-2">Interpretation</h3>
-                              <p className="text-muted-foreground">{generatedReport.interpretation}</p>
+                              <Textarea 
+                                value={generatedReport.interpretation} 
+                                onChange={(e) => handleInterpretationChange(e.target.value)}
+                                rows={4}
+                                placeholder="Enter interpretation here..."
+                              />
                           </div>
-                        </>
+                        </div>
                       )}
                   </div>
               )}
-              <DialogFooter className="no-print">
-                  <Button variant="outline" onClick={() => setIsReportOpen(false)}>Close</Button>
-                  <Button onClick={handlePrint} disabled={isGenerating || !generatedReport}><Printer className="mr-2 h-4 w-4" />Print Report</Button>
+              <DialogFooter className="no-print pt-4 border-t">
+                  <div className="flex justify-between w-full">
+                      <div>
+                          <Button variant="outline" onClick={handlePrint} disabled={!generatedReport}><Printer className="mr-2 h-4 w-4" />Print Report</Button>
+                      </div>
+                      <div className="flex gap-2">
+                           <Button variant="ghost" onClick={() => setIsReportOpen(false)}>Cancel</Button>
+                           <Button onClick={handleSaveReport} disabled={isGenerating || !generatedReport}><FileEdit className="mr-2 h-4 w-4" />Save Report</Button>
+                      </div>
+                  </div>
               </DialogFooter>
           </DialogContent>
       </Dialog>

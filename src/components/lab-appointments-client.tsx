@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useState } from "react";
@@ -11,7 +12,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, FileText } from "lucide-react";
+import { PlusCircle, FileText, MoreHorizontal, FileEdit, UserCog, Ban } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import type { LabAppointment, Patient } from "@/lib/types";
 import { format } from "date-fns";
@@ -51,11 +52,12 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "./ui/dropdown-menu";
 
 interface LabAppointmentsClientProps {
   initialLabAppointments: LabAppointment[];
   patients: Patient[];
-  onGenerateReport?: (appointment: LabAppointment) => void;
+  onCreateOrViewReport?: (appointment: LabAppointment) => void;
 }
 
 const formSchema = z.object({
@@ -71,7 +73,7 @@ type FormValues = z.infer<typeof formSchema>;
 export function LabAppointmentsClient({
   initialLabAppointments,
   patients,
-  onGenerateReport,
+  onCreateOrViewReport,
 }: LabAppointmentsClientProps) {
   const [labAppointments, setLabAppointments] =
     useState(initialLabAppointments);
@@ -124,7 +126,7 @@ export function LabAppointmentsClient({
       <div className="flex flex-col gap-4">
         <div className="flex items-center">
           <h1 className="text-lg font-semibold md:text-2xl font-headline">
-            Lab Appointments
+            Lab Appointments Queue
           </h1>
           <div className="ml-auto flex items-center gap-2">
             <Button size="sm" className="h-8 gap-1" onClick={() => setIsDialogOpen(true)}>
@@ -144,7 +146,8 @@ export function LabAppointmentsClient({
                 <TableHead>Test Name</TableHead>
                 <TableHead>Date</TableHead>
                 <TableHead>Status</TableHead>
-                <TableHead>Actions</TableHead>
+                <TableHead>Report</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -158,16 +161,41 @@ export function LabAppointmentsClient({
                     <Badge variant={getStatusVariant(appt.status)}>{appt.status}</Badge>
                   </TableCell>
                   <TableCell>
-                    {onGenerateReport && appt.status !== 'Cancelled' && (
+                    {onCreateOrViewReport && appt.status !== 'Cancelled' && (
                        <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => onGenerateReport(appt)}
+                          onClick={() => onCreateOrViewReport(appt)}
                         >
                           <FileText className="mr-2 h-4 w-4" />
-                          {appt.status === 'Completed' ? 'View Report' : 'Generate Report'}
+                          {appt.status === 'Completed' ? 'View/Edit Report' : 'Create Report'}
                         </Button>
                     )}
+                  </TableCell>
+                   <TableCell className="text-right">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          aria-haspopup="true"
+                          size="icon"
+                          variant="ghost"
+                        >
+                          <MoreHorizontal className="h-4 w-4" />
+                          <span className="sr-only">Toggle menu</span>
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                        <DropdownMenuItem>
+                            <UserCog className="mr-2 h-4 w-4" />
+                            Edit Patient Details
+                        </DropdownMenuItem>
+                        <DropdownMenuItem className="text-destructive">
+                             <Ban className="mr-2 h-4 w-4" />
+                            Cancel Appointment
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </TableCell>
                 </TableRow>
               ))}

@@ -1,4 +1,6 @@
 
+import type { GenerateLabReportOutput } from "@/ai/flows/generate-lab-report";
+
 export type PatientStatus = "Admitted" | "Under Observation" | "Discharged";
 export type Department = "Cardiology" | "Neurology" | "Pediatrics" | "Orthopedics" | "General";
 export type Gender = "Male" | "Female" | "Other";
@@ -50,10 +52,18 @@ export interface Billing {
   status: "Paid" | "Pending" | "Overdue";
 }
 
+export interface Analyte {
+    analyte: string;
+    result: string;
+    referenceRange: string;
+}
+
+
 export interface LabAppointment {
   id: string;
   patientId: string;
   testName: string;
   date: Date;
   status: "Scheduled" | "Completed" | "Cancelled";
+  reportData?: GenerateLabReportOutput;
 }
