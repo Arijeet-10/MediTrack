@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BrainCircuit, Calendar, LayoutDashboard, Stethoscope, List, CreditCard, FlaskConical } from "lucide-react";
+import { BrainCircuit, Calendar, LayoutDashboard, Stethoscope, List, CreditCard, FlaskConical, UserPlus } from "lucide-react";
 
 import {
   SidebarMenu,
@@ -14,6 +14,11 @@ const menuItems = [
     href: "/dashboard",
     label: "Dashboard",
     icon: LayoutDashboard,
+  },
+   {
+    href: "/dashboard/opd",
+    label: "OPD Registration",
+    icon: UserPlus,
   },
   {
     href: "/dashboard/appointments",

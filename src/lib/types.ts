@@ -8,6 +8,7 @@ export type AppointmentMode = "In-person" | "Online" | "Telephonic";
 export type PaymentStatus = "Paid" | "Pending" | "Partially Paid";
 export type DoctorStatus = "Active" | "Inactive" | "On Leave";
 export type BillingStatus = "Paid" | "Pending" | "Overdue";
+export type VisitType = "New" | "Follow-up" | "Referral";
 
 
 export interface Patient {
@@ -82,4 +83,19 @@ export interface LabAppointment {
   date: Date;
   status: "Scheduled" | "Completed" | "Cancelled";
   reportData?: GenerateLabReportOutput;
+}
+
+export interface OPDRegistration {
+  id: string; // OPD Number
+  date: Date;
+  patientName: string;
+  age: number;
+  gender: Gender;
+  contact: string;
+  department: Department;
+  doctorId: string;
+  reason: string;
+  visitType: VisitType;
+  fees: number;
+  paymentStatus: "Paid" | "Pending";
 }

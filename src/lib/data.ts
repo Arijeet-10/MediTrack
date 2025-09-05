@@ -1,4 +1,4 @@
-import type { Patient, Doctor, Department, Appointment, Billing, LabAppointment, MedicalRecord } from "./types";
+import type { Patient, Doctor, Department, Appointment, Billing, LabAppointment, MedicalRecord, OPDRegistration } from "./types";
 
 export const departments: Department[] = [
   "Cardiology",
@@ -177,4 +177,10 @@ export const medicalRecords: MedicalRecord[] = [
         title: "Migraine Follow-up",
         content: "Patient reports reduced frequency of migraines with new medication.",
     }
+];
+
+export const opdRegistrations: OPDRegistration[] = [
+    { id: "opd-001", date: new Date(), patientName: "Ramesh Singh", age: 42, gender: "Male", contact: "9123456780", department: "Orthopedics", doctorId: "doc4", reason: "Knee pain", visitType: "New", fees: 1200, paymentStatus: "Paid" },
+    { id: "opd-002", date: new Date(), patientName: "Geeta Devi", age: 55, gender: "Female", contact: "9123456781", department: "Cardiology", doctorId: "doc1", reason: "Chest discomfort", visitType: "New", fees: 1500, paymentStatus: "Pending" },
+    { id: "opd-003", date: new Date(), patientName: "Aarav Sharma", age: 6, gender: "Male", contact: "9123456782", department: "Pediatrics", doctorId: "doc3", reason: "Fever and cough", visitType: "Follow-up", fees: 800, paymentStatus: "Paid" },
 ];
