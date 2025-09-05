@@ -1,5 +1,7 @@
+
 import { PharmacistDashboardClient } from "@/components/pharmacist-dashboard-client";
 import { patients } from "@/lib/data";
+import { UserProvider } from "@/hooks/use-user";
 
 // Mock data for prescriptions
 const prescriptions = [
@@ -12,9 +14,11 @@ const prescriptions = [
 
 export default function PharmacistDashboardPage() {
   return (
-      <PharmacistDashboardClient
-        initialPrescriptions={prescriptions}
-        patients={patients}
-      />
+      <UserProvider>
+        <PharmacistDashboardClient
+            initialPrescriptions={prescriptions}
+            patients={patients}
+        />
+      </UserProvider>
   );
 }

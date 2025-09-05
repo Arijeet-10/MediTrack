@@ -1,5 +1,7 @@
+
 import { DoctorDashboardClient } from "@/components/doctor-dashboard-client";
 import { patients, appointments } from "@/lib/data";
+import { UserProvider } from "@/hooks/use-user";
 
 export default function DoctorDashboardPage() {
   const doctorId = "doc1"; // In a real app, you would get this from the logged in user
@@ -8,9 +10,11 @@ export default function DoctorDashboardPage() {
   const doctorPatients = patients.filter(p => patientIds.has(p.id));
 
   return (
-      <DoctorDashboardClient
-        appointments={doctorAppointments}
-        patients={doctorPatients}
-      />
+      <UserProvider>
+        <DoctorDashboardClient
+            appointments={doctorAppointments}
+            patients={doctorPatients}
+        />
+      </UserProvider>
   );
 }
