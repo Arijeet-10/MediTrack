@@ -12,7 +12,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, FileText, MoreHorizontal, FileEdit, UserCog, Ban } from "lucide-react";
+import { PlusCircle, FileText, MoreHorizontal, FileEdit, UserCog, Ban, CheckCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import type { LabAppointment, Patient } from "@/lib/types";
 import { format } from "date-fns";
@@ -58,6 +58,7 @@ interface LabAppointmentsClientProps {
   initialLabAppointments: LabAppointment[];
   patients: Patient[];
   onCreateOrViewReport?: (appointment: LabAppointment) => void;
+  onUpdateStatus?: (appointmentId: string, status: "Completed" | "Cancelled") => void;
 }
 
 const formSchema = z.object({
@@ -74,6 +75,7 @@ export function LabAppointmentsClient({
   initialLabAppointments,
   patients,
   onCreateOrViewReport,
+  onUpdateStatus,
 }: LabAppointmentsClientProps) {
   const [labAppointments, setLabAppointments] =
     useState(initialLabAppointments);
@@ -90,6 +92,11 @@ export function LabAppointmentsClient({
       testName: "",
     },
   });
+
+  // This updates local state for storybook/standalone, but parent state if onUpdateStatus is provided
+  React.useEffect(() => {
+    setLabAppointments(initialLabAppointments);
+  }, [initialLabAppointments]);
 
   const onSubmit = (data: FormValues) => {
     const newLabAppointment: LabAppointment = {
@@ -120,6 +127,20 @@ export function LabAppointmentsClient({
         return "destructive";
     }
   };
+  
+  const handleStatusUpdate = (id: string, status: "Completed" | "Cancelled") => {
+    if (onUpdateStatus) {
+      onUpdateStatus(id, status);
+    } else {
+        // Fallback for standalone usage
+        setLabAppointments(current => current.map(a => a.id === id ? {...a, status} : a));
+         toast({
+            title: "Status Updated",
+            description: `Appointment status has been updated to ${status}.`
+        });
+    }
+  }
+
 
   return (
     <>
@@ -151,7 +172,7 @@ export function LabAppointmentsClient({
               </TableRow>
             </TableHeader>
             <TableBody>
-              {initialLabAppointments.map((appt) => (
+              {labAppointments.map((appt) => (
                 <TableRow key={appt.id}>
                   <TableCell className="font-medium">{appt.id}</TableCell>
                   <TableCell>{getPatientName(appt.patientId)}</TableCell>
@@ -186,11 +207,15 @@ export function LabAppointmentsClient({
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                        <DropdownMenuItem onSelect={() => handleStatusUpdate(appt.id, 'Completed')}>
+                            <CheckCircle className="mr-2 h-4 w-4" />
+                            Mark as Completed
+                        </DropdownMenuItem>
                         <DropdownMenuItem>
                             <UserCog className="mr-2 h-4 w-4" />
                             Edit Patient Details
                         </DropdownMenuItem>
-                        <DropdownMenuItem className="text-destructive">
+                        <DropdownMenuItem className="text-destructive" onSelect={() => handleStatusUpdate(appt.id, 'Cancelled')}>
                              <Ban className="mr-2 h-4 w-4" />
                             Cancel Appointment
                         </DropdownMenuItem>

@@ -128,6 +128,18 @@ export function LaboratoryDashboardClient({
   const handlePrint = () => {
     window.print();
   }
+  
+  const handleUpdateStatus = (appointmentId: string, status: "Completed" | "Cancelled") => {
+    setLabAppointments(currentAppointments =>
+      currentAppointments.map(appt =>
+        appt.id === appointmentId ? { ...appt, status } : appt
+      )
+    );
+    toast({
+        title: "Appointment Updated",
+        description: `Appointment ${appointmentId} has been marked as ${status}.`,
+    });
+  };
 
 
   return (
@@ -189,6 +201,7 @@ export function LaboratoryDashboardClient({
           initialLabAppointments={labAppointments}
           patients={patients}
           onCreateOrViewReport={handleCreateOrViewReport}
+          onUpdateStatus={handleUpdateStatus}
         />
       </main>
 
