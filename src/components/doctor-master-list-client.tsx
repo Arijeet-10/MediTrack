@@ -52,17 +52,19 @@ interface DoctorMasterListClientProps {
   departments: Department[];
 }
 
-const formSchema = z.object({
+const doctorStatuses: DoctorStatus[] = ["Active", "Inactive", "On Leave"];
+
+const createFormSchema = (departments: Department[]) => z.object({
   name: z.string().min(1, "Name is required"),
-  department: z.nativeEnum(Department),
+  department: z.enum(departments as [string, ...string[]]),
   qualification: z.string().min(1, "Qualification is required"),
   experience: z.coerce.number().min(0, "Experience must be a positive number"),
   languages: z.string().min(1, "Languages are required"),
   email: z.string().email("Invalid email address"),
-  status: z.nativeEnum(DoctorStatus),
+  status: z.enum(doctorStatuses as [string, ...string[]]),
 });
 
-type FormValues = z.infer<typeof formSchema>;
+type FormValues = z.infer<ReturnType<typeof createFormSchema>>;
 
 const statusConfig: Record<DoctorStatus, { variant: "default" | "secondary" | "destructive"; icon: React.ElementType }> = {
     Active: { variant: 'default', icon: CheckCircle },
@@ -78,6 +80,8 @@ export function DoctorMasterListClient({ initialDoctors, departments }: DoctorMa
 
   const [departmentFilter, setDepartmentFilter] = useState<"All" | Department>("All");
   const [statusFilter, setStatusFilter] = useState<"All" | DoctorStatus>("All");
+  
+  const formSchema = createFormSchema(departments);
 
 
   const form = useForm<FormValues>({
@@ -107,7 +111,7 @@ export function DoctorMasterListClient({ initialDoctors, departments }: DoctorMa
     } else {
       form.reset({
         name: "",
-        department: "General",
+        department: departments[0] || "General",
         qualification: "",
         experience: 5,
         languages: "",
@@ -193,9 +197,7 @@ export function DoctorMasterListClient({ initialDoctors, departments }: DoctorMa
                     </SelectTrigger>
                     <SelectContent>
                         <SelectItem value="All">All Statuses</SelectItem>
-                        <SelectItem value="Active">Active</SelectItem>
-                        <SelectItem value="Inactive">Inactive</SelectItem>
-                        <SelectItem value="On Leave">On Leave</SelectItem>
+                        {doctorStatuses.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
                     </SelectContent>
                 </Select>
             </CardContent>
@@ -381,9 +383,7 @@ export function DoctorMasterListClient({ initialDoctors, departments }: DoctorMa
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="Active">Active</SelectItem>
-                        <SelectItem value="Inactive">Inactive</SelectItem>
-                        <SelectItem value="On Leave">On Leave</SelectItem>
+                        {doctorStatuses.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
                       </SelectContent>
                     </Select>
                     <FormMessage />
