@@ -1,3 +1,4 @@
+
 import { AppShell } from "@/components/app-shell";
 import { DashboardClient } from "@/components/dashboard-client";
 import { patients, doctors, appointments, billings, labAppointments } from "@/lib/data";
