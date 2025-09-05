@@ -205,24 +205,6 @@ export function AppointmentsClient({
     return filtered;
   }, [appointments, statusFilter, searchQuery, selectedDate]);
   
-  const dailyStats = useMemo(() => {
-    const todaysAppointments = filteredAppointments;
-
-    const totalPatients = new Set(todaysAppointments.map(a => a.patientName)).size;
-    const amountCollected = todaysAppointments
-        .filter(a => a.paymentStatus === 'Paid')
-        .reduce((sum, a) => sum + a.fees, 0);
-
-    const appointmentsPerDoctor = todaysAppointments.reduce((acc, a) => {
-        const docName = getDoctorName(a.doctorId);
-        acc[docName] = (acc[docName] || 0) + 1;
-        return acc;
-    }, {} as Record<string, number>);
-
-    return { totalPatients, amountCollected, appointmentsPerDoctor };
-  }, [filteredAppointments, doctors]);
-
-
   const handleEdit = (appointment: Appointment) => {
     setEditingAppointment(appointment);
     setIsDialogOpen(true);
@@ -308,48 +290,6 @@ export function AppointmentsClient({
             </Button>
           </div>
         </div>
-
-        <div className="grid gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-3 no-print">
-            <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">
-                        Total Patients ({selectedDate ? format(selectedDate, "MMM dd") : 'All'})
-                    </CardTitle>
-                    <Users className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                    <div className="text-2xl font-bold">{dailyStats.totalPatients}</div>
-                </CardContent>
-            </Card>
-            <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">
-                        Amount Collected
-                    </CardTitle>
-                    <CreditCard className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                    <div className="text-2xl font-bold">Rs. {dailyStats.amountCollected.toLocaleString('en-IN')}</div>
-                </CardContent>
-            </Card>
-             <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Appts. per Doctor</CardTitle>
-                    <Stethoscope className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent className="text-xs text-muted-foreground">
-                   {Object.entries(dailyStats.appointmentsPerDoctor).length > 0 ? (
-                        Object.entries(dailyStats.appointmentsPerDoctor).map(([name, count]) => (
-                            <div key={name} className="flex justify-between">
-                                <span>{name}</span>
-                                <span>{count}</span>
-                            </div>
-                        ))
-                   ) : <p>No appointments today.</p>}
-                </CardContent>
-            </Card>
-        </div>
-
 
         <div className="flex items-center no-print">
             <div className="flex items-center gap-2">
@@ -748,5 +688,7 @@ export function AppointmentsClient({
     </>
   );
 }
+
+    
 
     
