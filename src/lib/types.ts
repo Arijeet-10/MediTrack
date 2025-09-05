@@ -88,6 +88,7 @@ export interface LabAppointment {
 export interface OPDRegistration {
   id: string; // OPD Number
   date: Date;
+  time: string;
   patientName: string;
   age: number;
   gender: Gender;

@@ -67,6 +67,10 @@ const createFormSchema = (departments: Department[]) => z.object({
   age: z.coerce.number().min(0, "Age cannot be negative"),
   gender: z.enum(genders as [string, ...string[]]),
   contact: z.string().min(10, "Contact number must be at least 10 digits"),
+  time: z
+    .string()
+    .min(1, "Time is required")
+    .regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]\s(AM|PM)$/i, "Invalid time format (e.g., 10:00 AM)"),
   department: z.enum(departments as [string, ...string[]]),
   doctorId: z.string().min(1, "Doctor is required"),
   reason: z.string().min(1, "Reason for visit is required"),
@@ -97,6 +101,7 @@ export function OpdClient({
       patientName: "",
       age: 0,
       contact: "",
+      time: "",
       visitType: "New",
       fees: 1000,
       paymentStatus: "Pending",
@@ -282,19 +287,34 @@ export function OpdClient({
                   />
               </div>
 
-               <FormField
-                  control={form.control}
-                  name="contact"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Contact Number</FormLabel>
-                      <FormControl>
-                        <Input placeholder="e.g., 9876543210" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                      control={form.control}
+                      name="contact"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Contact Number</FormLabel>
+                          <FormControl>
+                            <Input placeholder="e.g., 9876543210" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                     <FormField
+                        control={form.control}
+                        name="time"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Time</FormLabel>
+                            <FormControl>
+                              <Input placeholder="e.g., 10:30 AM" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <FormField
