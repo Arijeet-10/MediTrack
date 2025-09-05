@@ -66,8 +66,8 @@ export function BillingClient({
   }, [billings, statusFilter]);
 
   return (
-    <>
-      <div className="flex flex-col gap-4">
+    <div className="printable-area-container">
+      <div className="flex flex-col gap-4 no-print">
         <div className="flex items-center">
           <h1 className="text-lg font-semibold md:text-2xl font-headline">
             Billing
@@ -133,6 +133,6 @@ export function BillingClient({
             onOpenChange={setIsInvoiceOpen} 
         />
       )}
-    </>
+    </div>
   );
 }
