@@ -32,11 +32,27 @@ export interface Appointment {
 }
 
 export interface MedicalRecord {
-  id: string;
+  id:string;
   patientId: string;
   date: Date;
   type: "Note" | "Report";
   title: string;
   content: string;
   fileUrl?: string;
+}
+
+export interface Billing {
+  id: string;
+  patientId: string;
+  amount: number;
+  date: Date;
+  status: "Paid" | "Pending" | "Overdue";
+}
+
+export interface LabAppointment {
+  id: string;
+  patientId: string;
+  testName: string;
+  date: Date;
+  status: "Scheduled" | "Completed" | "Cancelled";
 }

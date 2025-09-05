@@ -1,4 +1,4 @@
-import type { Patient, Doctor, Department, Appointment } from "./types";
+import type { Patient, Doctor, Department, Appointment, Billing, LabAppointment } from "./types";
 
 export const departments: Department[] = [
   "Cardiology",
@@ -102,4 +102,17 @@ export const appointments: Appointment[] = [
         time: "03:00 PM",
         reason: "Routine Check",
     },
+];
+
+export const billings: Billing[] = [
+    { id: "bill1", patientId: "pat1", amount: 1200, date: new Date("2024-08-10"), status: "Paid" },
+    { id: "bill2", patientId: "pat2", amount: 750, date: new Date("2024-08-10"), status: "Pending" },
+    { id: "bill3", patientId: "pat3", amount: 300, date: new Date("2024-07-05"), status: "Overdue" },
+    { id: "bill4", patientId: "pat4", amount: 2500, date: new Date("2024-08-11"), status: "Pending" },
+];
+
+export const labAppointments: LabAppointment[] = [
+    { id: "lab1", patientId: "pat1", testName: "Blood Panel", date: new Date("2024-08-11"), status: "Scheduled" },
+    { id: "lab2", patientId: "pat2", testName: "MRI Scan", date: new Date("2024-08-12"), status: "Scheduled" },
+    { id: "lab3", patientId: "pat5", testName: "X-Ray", date: new Date("2024-08-09"), status: "Completed" },
 ];
