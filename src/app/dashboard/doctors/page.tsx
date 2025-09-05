@@ -39,7 +39,7 @@ export default function DoctorsPage() {
                   <CardDescription>{doctor.department}</CardDescription>
                 </div>
               </CardHeader>
-              <CardContent className="space-y-4 flex-grow">
+              <CardContent className="space-y-4 flex-grow pb-6">
                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <GraduationCap className="h-4 w-4" />
                     <span>{doctor.qualification}</span>
@@ -60,17 +60,6 @@ export default function DoctorsPage() {
                     ))}
                   </div>
                 </div>
-              </CardContent>
-              <CardContent className="pt-2 mt-auto">
-                 <div className="flex gap-2 pt-2 border-t">
-                    <Button variant="outline" size="sm" className="flex-1">
-                        <MessageSquare className="mr-2 h-4 w-4" /> Message
-                    </Button>
-                    <Button variant="outline" size="sm" className="flex-1">
-                        <Phone className="mr-2 h-4 w-4" /> Call
-                    </Button>
-                </div>
-                <Button className="w-full mt-2">Book Appointment</Button>
               </CardContent>
             </Card>
           )})}
