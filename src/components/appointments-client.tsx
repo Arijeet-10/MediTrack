@@ -18,7 +18,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal, PlusCircle, Video, Phone, Building, FileEdit, Search } from "lucide-react";
+import { MoreHorizontal, PlusCircle, Video, Phone, Building, FileEdit, Search, Printer } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -59,6 +59,7 @@ import type { Appointment, Patient, Doctor, AppointmentStatus, AppointmentMode, 
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { Badge } from "./ui/badge";
+import { AppointmentSlipDialog } from "./appointment-slip-dialog";
 
 interface AppointmentsClientProps {
   initialAppointments: Appointment[];
@@ -148,6 +149,8 @@ export function AppointmentsClient({
   const [statusFilter, setStatusFilter] = useState<"All" | AppointmentStatus>("All");
   const [searchQuery, setSearchQuery] = useState("");
   const { toast } = useToast();
+  const [isSlipOpen, setIsSlipOpen] = useState(false);
+  const [selectedAppointmentForSlip, setSelectedAppointmentForSlip] = useState<Appointment | null>(null);
 
   const getDoctorName = (doctorId: string) => doctors.find((d) => d.id === doctorId)?.name || "Unknown";
 
@@ -206,6 +209,11 @@ export function AppointmentsClient({
     setIsDialogOpen(true);
   };
 
+  const handlePrintSlip = (appointment: Appointment) => {
+    setSelectedAppointmentForSlip(appointment);
+    setIsSlipOpen(true);
+  };
+
 
   const onSubmit = (data: FormValues) => {
     if (editingAppointment) {
@@ -236,8 +244,8 @@ export function AppointmentsClient({
 
   return (
     <>
-      <div className="flex flex-col gap-4">
-        <div className="flex items-center">
+      <div className="flex flex-col gap-4 printable-area-container">
+        <div className="flex items-center no-print">
           <h1 className="text-lg font-semibold md:text-2xl font-headline">
             Appointments
           </h1>
@@ -276,7 +284,7 @@ export function AppointmentsClient({
             </Button>
           </div>
         </div>
-        <div className="rounded-xl border shadow-sm bg-card">
+        <div className="rounded-xl border shadow-sm bg-card no-print">
           <Table>
             <TableHeader>
               <TableRow>
@@ -336,6 +344,10 @@ export function AppointmentsClient({
                         <DropdownMenuItem onSelect={() => handleEdit(appointment)}>
                           <FileEdit className="mr-2 h-4 w-4" />
                           Edit
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onSelect={() => handlePrintSlip(appointment)}>
+                           <Printer className="mr-2 h-4 w-4" />
+                           Print Slip
                         </DropdownMenuItem>
                         <DropdownMenuItem>View Medical History</DropdownMenuItem>
                         <DropdownMenuItem>Reschedule</DropdownMenuItem>
@@ -630,6 +642,14 @@ export function AppointmentsClient({
           </Form>
         </DialogContent>
       </Dialog>
+      {selectedAppointmentForSlip && (
+          <AppointmentSlipDialog 
+            appointment={selectedAppointmentForSlip}
+            doctor={doctors.find(d => d.id === selectedAppointmentForSlip.doctorId)!}
+            isOpen={isSlipOpen}
+            onOpenChange={setIsSlipOpen}
+          />
+      )}
     </>
   );
 }
