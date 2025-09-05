@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/select";
 import { InvoiceDetailsDialog } from "./invoice-details-dialog";
 import { doctors } from "@/lib/data";
+import { useToast } from "@/hooks/use-toast";
 
 
 interface BillingClientProps {
@@ -38,6 +39,7 @@ export function BillingClient({
   const [isInvoiceOpen, setIsInvoiceOpen] = useState(false);
   const [selectedBill, setSelectedBill] = useState<Billing | null>(null);
   const [statusFilter, setStatusFilter] = useState<"All" | BillingStatus>("All");
+  const { toast } = useToast();
   
   const getPatient = (patientId: string) => patients.find((p) => p.id === patientId);
   const getDoctor = (doctorId: string) => doctors.find((d) => d.id === doctorId);
@@ -54,6 +56,18 @@ export function BillingClient({
   };
 
   const handleViewInvoice = (bill: Billing) => {
+    const patient = getPatient(bill.patientId);
+    const doctor = getDoctor(bill.doctorId);
+
+    if (!patient || !doctor) {
+        toast({
+            variant: "destructive",
+            title: "Error: Missing Data",
+            description: "Could not find patient or doctor details for this invoice."
+        });
+        console.error(`Could not find details for invoice ${bill.id}. Patient found: ${!!patient}, Doctor found: ${!!doctor}`);
+        return;
+    }
     setSelectedBill(bill);
     setIsInvoiceOpen(true);
   }
@@ -64,6 +78,9 @@ export function BillingClient({
     }
     return billings.filter((bill) => bill.status === statusFilter);
   }, [billings, statusFilter]);
+
+  const selectedPatient = selectedBill ? getPatient(selectedBill.patientId) : null;
+  const selectedDoctor = selectedBill ? getDoctor(selectedBill.doctorId) : null;
 
   return (
     <div className="printable-area-container">
@@ -124,11 +141,11 @@ export function BillingClient({
           </Table>
         </div>
       </div>
-      {selectedBill && (
+      {selectedBill && selectedPatient && selectedDoctor && (
         <InvoiceDetailsDialog 
             bill={selectedBill} 
-            patient={getPatient(selectedBill.patientId)!}
-            doctor={getDoctor(selectedBill.doctorId)!}
+            patient={selectedPatient}
+            doctor={selectedDoctor}
             isOpen={isInvoiceOpen} 
             onOpenChange={setIsInvoiceOpen} 
         />

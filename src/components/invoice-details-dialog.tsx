@@ -18,8 +18,8 @@ import { Separator } from "./ui/separator";
 
 interface InvoiceDetailsDialogProps {
   bill: Billing;
-  patient: Patient;
-  doctor: Doctor;
+  patient: Patient | null;
+  doctor: Doctor | null;
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
 }
@@ -39,6 +39,11 @@ export function InvoiceDetailsDialog({
     }, 100);
   };
   
+  if (!patient || !doctor) {
+    // This should ideally not happen due to the check in the parent, but it's good practice.
+    return null;
+  }
+
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-3xl printable-area">
