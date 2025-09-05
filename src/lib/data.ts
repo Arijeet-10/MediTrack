@@ -1,3 +1,4 @@
+
 import type { Patient, Doctor, Department, Appointment, Billing, LabAppointment, MedicalRecord, OPDRegistration } from "./types";
 
 export const departments: Department[] = [
@@ -73,6 +74,10 @@ export const appointments: Appointment[] = [
     {
         id: "apt1",
         patientId: "pat1",
+        patientName: "Arjun Mehta",
+        patientAge: 45,
+        patientGender: "Male",
+        patientContact: "9876543210",
         doctorId: "doc1",
         date: new Date("2024-08-10T10:00:00Z"),
         time: "10:00 AM",
@@ -86,6 +91,10 @@ export const appointments: Appointment[] = [
     {
         id: "apt2",
         patientId: "pat2",
+        patientName: "Sneha Rao",
+        patientAge: 32,
+        patientGender: "Female",
+        patientContact: "9876543211",
         doctorId: "doc2",
         date: new Date("2024-08-10T11:00:00Z"),
         time: "11:00 AM",
@@ -99,6 +108,10 @@ export const appointments: Appointment[] = [
     {
         id: "apt3",
         patientId: "pat4",
+        patientName: "Meera Iyer",
+        patientAge: 8,
+        patientGender: "Female",
+        patientContact: "9876543213",
         doctorId: "doc3",
         date: new Date("2024-08-11T09:30:00Z"),
         time: "09:30 AM",
@@ -112,6 +125,10 @@ export const appointments: Appointment[] = [
      {
         id: "apt4",
         patientId: "pat5",
+        patientName: "Vijay Nair",
+        patientAge: 58,
+        patientGender: "Male",
+        patientContact: "9876543214",
         doctorId: "doc1",
         date: new Date("2024-08-12T15:00:00Z"),
         time: "03:00 PM",
@@ -125,6 +142,10 @@ export const appointments: Appointment[] = [
      {
         id: "apt5",
         patientId: "pat3",
+        patientName: "Rajesh Kumar",
+        patientAge: 67,
+        patientGender: "Male",
+        patientContact: "9876543212",
         doctorId: "doc4",
         date: new Date("2024-08-09T14:00:00Z"),
         time: "02:00 PM",

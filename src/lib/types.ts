@@ -1,3 +1,4 @@
+
 import type { GenerateLabReportOutput } from "@/ai/flows/generate-lab-report";
 
 export type PatientStatus = "Admitted" | "Under Observation" | "Discharged";
@@ -36,7 +37,12 @@ export interface Doctor {
 
 export interface Appointment {
   id: string;
-  patientId: string;
+  patientId: string; // This will now be a newly generated ID
+  // Patient details are now part of the appointment itself
+  patientName: string;
+  patientAge: number;
+  patientGender: Gender;
+  patientContact: string;
   doctorId: string;
   date: Date;
   time: string;

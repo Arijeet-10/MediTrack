@@ -55,7 +55,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useToast } from "@/hooks/use-toast";
-import type { Appointment, Patient, Doctor, AppointmentStatus, AppointmentMode, PaymentStatus } from "@/lib/types";
+import type { Appointment, Patient, Doctor, AppointmentStatus, AppointmentMode, PaymentStatus, Gender } from "@/lib/types";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { Badge } from "./ui/badge";
@@ -66,8 +66,13 @@ interface AppointmentsClientProps {
   doctors: Doctor[];
 }
 
+const genders: Gender[] = ["Male", "Female", "Other"];
+
 const formSchema = z.object({
-  patientId: z.string().min(1, "Patient is required"),
+  patientName: z.string().min(1, "Patient name is required."),
+  patientAge: z.coerce.number().min(0, "Age must be a positive number."),
+  patientGender: z.enum(genders),
+  patientContact: z.string().min(10, "Contact must be at least 10 digits."),
   doctorId: z.string().min(1, "Doctor is required"),
   date: z.date({
     required_error: "A date is required.",
@@ -142,13 +147,15 @@ export function AppointmentsClient({
   const [statusFilter, setStatusFilter] = useState<"All" | AppointmentStatus>("All");
   const { toast } = useToast();
 
-  const getPatient = (patientId: string) => patients.find((p) => p.id === patientId);
   const getDoctorName = (doctorId: string) => doctors.find((d) => d.id === doctorId)?.name || "Unknown";
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      patientId: "",
+      patientName: "",
+      patientAge: 0,
+      patientContact: "",
+      patientGender: "Male",
       doctorId: "",
       time: "",
       reason: "",
@@ -170,16 +177,27 @@ export function AppointmentsClient({
   const onSubmit = (data: FormValues) => {
     const newAppointment: Appointment = {
       id: `apt${appointments.length + 1}`,
-      ...data,
+      patientId: `pat${patients.length + appointments.length + 1}`, // Generate a new patient ID
+      patientName: data.patientName,
+      patientAge: data.patientAge,
+      patientGender: data.patientGender,
+      patientContact: data.patientContact,
+      doctorId: data.doctorId,
+      date: data.date,
+      time: data.time,
+      reason: data.reason,
+      status: data.status,
+      mode: data.mode,
+      duration: data.duration,
+      fees: data.fees,
+      paymentStatus: data.paymentStatus,
     };
     setAppointments((prev) => [...prev, newAppointment]);
     setIsDialogOpen(false);
     form.reset();
     toast({
       title: "Appointment Scheduled",
-      description: `Appointment for ${getPatient(
-        newAppointment.patientId
-      )?.name} with ${getDoctorName(newAppointment.doctorId)} has been scheduled.`,
+      description: `Appointment for ${newAppointment.patientName} with ${getDoctorName(newAppointment.doctorId)} has been scheduled.`,
     });
   };
 
@@ -233,13 +251,12 @@ export function AppointmentsClient({
             </TableHeader>
             <TableBody>
               {filteredAppointments.map((appointment) => {
-                const patient = getPatient(appointment.patientId);
                 const ModeIcon = ModeIcons[appointment.mode];
                 return (
                 <TableRow key={appointment.id} className={cn(getStatusRowClass(appointment.status))}>
                    <TableCell>
-                      <div className="font-medium">{patient?.name}</div>
-                      <div className="text-xs text-muted-foreground">{patient?.contact}</div>
+                      <div className="font-medium">{appointment.patientName}</div>
+                      <div className="text-xs text-muted-foreground">{appointment.patientContact}</div>
                    </TableCell>
                   <TableCell>{getDoctorName(appointment.doctorId)}</TableCell>
                   <TableCell>
@@ -292,42 +309,76 @@ export function AppointmentsClient({
           <DialogHeader>
             <DialogTitle>Schedule New Appointment</DialogTitle>
             <DialogDescription>
-              Fill in the details to schedule a new appointment.
+              Fill in the details to register a new patient and schedule an appointment.
             </DialogDescription>
           </DialogHeader>
           <Form {...form}>
             <form
               onSubmit={form.handleSubmit(onSubmit)}
-              className="space-y-4 py-4"
+              className="space-y-4 py-4 max-h-[70vh] overflow-y-auto px-1"
             >
              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="patientId"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Patient</FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select a patient" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {patients.map((p) => (
-                          <SelectItem key={p.id} value={p.id}>
-                            {p.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                <FormField
+                    control={form.control}
+                    name="patientName"
+                    render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>Patient Name</FormLabel>
+                        <FormControl>
+                        <Input placeholder="Enter full name" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                    </FormItem>
+                    )}
+                />
+                <FormField
+                    control={form.control}
+                    name="patientAge"
+                    render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>Age</FormLabel>
+                        <FormControl>
+                        <Input type="number" placeholder="Enter age" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                    </FormItem>
+                    )}
+                />
+                <FormField
+                    control={form.control}
+                    name="patientGender"
+                    render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>Gender</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                                <SelectTrigger>
+                                <SelectValue placeholder="Select gender" />
+                                </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                                {genders.map(g => <SelectItem key={g} value={g}>{g}</SelectItem>)}
+                            </SelectContent>
+                        </Select>
+                        <FormMessage />
+                    </FormItem>
+                    )}
+                />
+                <FormField
+                    control={form.control}
+                    name="patientContact"
+                    render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>Contact Number</FormLabel>
+                        <FormControl>
+                        <Input placeholder="Enter contact number" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                    </FormItem>
+                    )}
+                />
+             </div>
+             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField
                 control={form.control}
                 name="doctorId"
@@ -445,7 +496,7 @@ export function AppointmentsClient({
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Select mode" />
-                        </SelectTrigger>
+                        </Trigger>
                       </FormControl>
                       <SelectContent>
                         <SelectItem value="In-person">In-person</SelectItem>
@@ -467,7 +518,7 @@ export function AppointmentsClient({
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Select status" />
-                        </SelectTrigger>
+                        </Trigger>
                       </FormControl>
                       <SelectContent>
                         <SelectItem value="Confirmed">Confirmed</SelectItem>
