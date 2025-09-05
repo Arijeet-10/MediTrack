@@ -189,7 +189,7 @@ export function PatientDetailsDialog({
                         <CardTitle className="text-base flex justify-between items-center">
                           <span>{record.title}</span>
                           <span className="text-xs font-normal text-muted-foreground">
-                            {format(record.date, "PPP")}
+                            {format(record.date, "dd-MMM-yyyy")}
                           </span>
                         </CardTitle>
                         <DialogDescription className="text-xs">{record.type}</DialogDescription>

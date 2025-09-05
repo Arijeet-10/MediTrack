@@ -170,7 +170,7 @@ export function DashboardClient({
                       {getDoctorName(appointment.doctorId)}
                     </TableCell>
                     <TableCell>
-                       {format(appointment.date, "PPP")} at {appointment.time}
+                       {format(appointment.date, "dd-MMM-yyyy")} at {appointment.time}
                     </TableCell>
                     <TableCell className="text-right">{appointment.reason}</TableCell>
                   </TableRow>

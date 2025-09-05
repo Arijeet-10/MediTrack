@@ -84,7 +84,7 @@ export function BillingClient({
                 <TableCell className="font-medium">{bill.id}</TableCell>
                 <TableCell>{getPatientName(bill.patientId)}</TableCell>
                 <TableCell>Rs. {bill.amount.toLocaleString("en-IN")}</TableCell>
-                <TableCell>{format(bill.date, "PPP")}</TableCell>
+                <TableCell>{format(bill.date, "dd-MMM-yyyy")}</TableCell>
                 <TableCell>
                   <Badge variant={getStatusVariant(bill.status)}>{bill.status}</Badge>
                 </TableCell>

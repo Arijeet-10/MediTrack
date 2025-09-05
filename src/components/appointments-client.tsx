@@ -243,7 +243,7 @@ export function AppointmentsClient({
                    </TableCell>
                   <TableCell>{getDoctorName(appointment.doctorId)}</TableCell>
                   <TableCell>
-                      <div>{format(appointment.date, "PPP")}</div>
+                      <div>{format(appointment.date, "dd-MMM-yyyy")}</div>
                       <div className="text-xs text-muted-foreground">{appointment.time} ({appointment.duration} min)</div>
                   </TableCell>
                   <TableCell>
@@ -372,7 +372,7 @@ export function AppointmentsClient({
                             )}
                           >
                             {field.value ? (
-                              format(field.value, "PPP")
+                              format(field.value, "dd-MMM-yyyy")
                             ) : (
                               <span>Pick a date</span>
                             )}

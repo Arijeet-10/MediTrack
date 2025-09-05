@@ -210,7 +210,7 @@ export function LaboratoryDashboardClient({
               <DialogHeader>
                   <DialogTitle className="font-headline text-2xl">Lab Report Editor</DialogTitle>
                   <DialogDescription>
-                      Create or edit the report for {selectedAppointment?.testName}. Generated on {format(new Date(), "PPP")}
+                      Create or edit the report for {selectedAppointment?.testName}. Generated on {format(new Date(), "dd-MMM-yyyy")}
                   </DialogDescription>
               </DialogHeader>
               {selectedPatient && selectedAppointment && (
@@ -226,7 +226,7 @@ export function LaboratoryDashboardClient({
                               <h3 className="font-semibold">Test Details</h3>
                               <p><strong>Test Name:</strong> {selectedAppointment.testName}</p>
                               <p><strong>Appointment ID:</strong> {selectedAppointment.id}</p>
-                              <p><strong>Date of Test:</strong> {format(selectedAppointment.date, "PPP")}</p>
+                              <p><strong>Date of Test:</strong> {format(selectedAppointment.date, "dd-MMM-yyyy")}</p>
                           </div>
                       </div>
 

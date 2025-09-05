@@ -178,7 +178,7 @@ export function LabAppointmentsClient({
                   <TableCell className="font-medium">{appt.id}</TableCell>
                   <TableCell>{getPatientName(appt.patientId)}</TableCell>
                   <TableCell>{appt.testName}</TableCell>
-                  <TableCell>{format(appt.date, "PPP")}</TableCell>
+                  <TableCell>{format(appt.date, "dd-MMM-yyyy")}</TableCell>
                   <TableCell>
                     <Badge variant={getStatusVariant(appt.status)}>{appt.status}</Badge>
                   </TableCell>
@@ -298,7 +298,7 @@ export function LabAppointmentsClient({
                             )}
                           >
                             {field.value ? (
-                              format(field.value, "PPP")
+                              format(field.value, "dd-MMM-yyyy")
                             ) : (
                               <span>Pick a date</span>
                             )}
