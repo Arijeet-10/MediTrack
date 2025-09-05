@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BrainCircuit, Calendar, LayoutDashboard, Stethoscope, List, CreditCard, FlaskConical, User, Pill } from "lucide-react";
+import { BrainCircuit, Calendar, LayoutDashboard, Stethoscope, List, CreditCard, FlaskConical } from "lucide-react";
 
 import {
   SidebarMenu,

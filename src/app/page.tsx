@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Stethoscope, User, FlaskConical, Pill } from "lucide-react";
+import { Stethoscope, User, FlaskConical } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -15,12 +15,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 function getDashboardLink(role: string) {
     switch (role.toLowerCase()) {
-        case "doctor":
-            return "/dashboard/doctor";
         case "laboratory":
             return "/dashboard/laboratory";
-        case "pharmacist":
-            return "/dashboard/pharmacist";
         default:
             return "/dashboard";
     }
@@ -72,11 +68,9 @@ export default function LoginPage() {
             Select your role to login to your account
           </CardDescription>
         </CardHeader>
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="admin"><User className="h-4 w-4 mr-1"/>Admin</TabsTrigger>
-          <TabsTrigger value="doctor"><Stethoscope className="h-4 w-4 mr-1"/>Doctor</TabsTrigger>
           <TabsTrigger value="lab"><FlaskConical className="h-4 w-4 mr-1"/>Laboratory</TabsTrigger>
-          <TabsTrigger value="pharmacist"><Pill className="h-4 w-4 mr-1"/>Pharmacist</TabsTrigger>
         </TabsList>
         <TabsContent value="admin">
           <Card>
@@ -85,24 +79,10 @@ export default function LoginPage() {
             </CardContent>
           </Card>
         </TabsContent>
-        <TabsContent value="doctor">
-           <Card>
-            <CardContent className="pt-6">
-              <LoginForm role="Doctor" />
-            </CardContent>
-          </Card>
-        </TabsContent>
         <TabsContent value="lab">
            <Card>
             <CardContent className="pt-6">
               <LoginForm role="Laboratory" />
-            </CardContent>
-          </Card>
-        </TabsContent>
-        <TabsContent value="pharmacist">
-           <Card>
-            <CardContent className="pt-6">
-              <LoginForm role="Pharmacist" />
             </CardContent>
           </Card>
         </TabsContent>
