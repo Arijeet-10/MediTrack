@@ -50,13 +50,20 @@ const menuItems = [
 export function MainNav() {
   const pathname = usePathname();
 
+  const isActive = (href: string) => {
+    if (href === "/dashboard") {
+      return pathname === href;
+    }
+    return pathname.startsWith(href);
+  };
+
   return (
     <SidebarMenu>
       {menuItems.map((item) => (
         <SidebarMenuItem key={item.href}>
           <Link href={item.href}>
             <SidebarMenuButton
-              isActive={pathname.startsWith(item.href) && (item.href.split('/').length === 3 ? pathname === item.href : true)}
+              isActive={isActive(item.href)}
               className={cn("w-full justify-start")}
               tooltip={item.label}
             >
