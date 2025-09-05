@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import {
   Table,
   TableBody,
@@ -18,7 +18,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal, PlusCircle, Video, Phone, Building } from "lucide-react";
+import { MoreHorizontal, PlusCircle, Video, Phone, Building, FileEdit } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -144,6 +144,7 @@ export function AppointmentsClient({
 }: AppointmentsClientProps) {
   const [appointments, setAppointments] = useState(initialAppointments);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [editingAppointment, setEditingAppointment] = useState<Appointment | null>(null);
   const [statusFilter, setStatusFilter] = useState<"All" | AppointmentStatus>("All");
   const { toast } = useToast();
 
@@ -151,21 +152,29 @@ export function AppointmentsClient({
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-      patientName: "",
-      patientAge: 0,
-      patientContact: "",
-      patientGender: "Male",
-      doctorId: "",
-      time: "",
-      reason: "",
-      mode: "In-person",
-      duration: 30,
-      fees: 500,
-      status: "Confirmed",
-      paymentStatus: "Pending",
-    },
   });
+
+  useEffect(() => {
+    if (editingAppointment) {
+      form.reset(editingAppointment);
+    } else {
+      form.reset({
+        patientName: "",
+        patientAge: 0,
+        patientContact: "",
+        patientGender: "Male",
+        doctorId: "",
+        time: "",
+        reason: "",
+        mode: "In-person",
+        duration: 30,
+        fees: 500,
+        status: "Confirmed",
+        paymentStatus: "Pending",
+      });
+    }
+  }, [editingAppointment, form]);
+
 
   const filteredAppointments = useMemo(() => {
     if (statusFilter === "All") {
@@ -174,31 +183,42 @@ export function AppointmentsClient({
     return appointments.filter(a => a.status === statusFilter);
   }, [appointments, statusFilter]);
 
+  const handleEdit = (appointment: Appointment) => {
+    setEditingAppointment(appointment);
+    setIsDialogOpen(true);
+  };
+
+  const handleCreate = () => {
+    setEditingAppointment(null);
+    setIsDialogOpen(true);
+  };
+
+
   const onSubmit = (data: FormValues) => {
-    const newAppointment: Appointment = {
-      id: `apt${appointments.length + 1}`,
-      patientId: `pat${patients.length + appointments.length + 1}`, // Generate a new patient ID
-      patientName: data.patientName,
-      patientAge: data.patientAge,
-      patientGender: data.patientGender,
-      patientContact: data.patientContact,
-      doctorId: data.doctorId,
-      date: data.date,
-      time: data.time,
-      reason: data.reason,
-      status: data.status,
-      mode: data.mode,
-      duration: data.duration,
-      fees: data.fees,
-      paymentStatus: data.paymentStatus,
-    };
-    setAppointments((prev) => [...prev, newAppointment]);
+    if (editingAppointment) {
+      // Update existing appointment
+      const updatedAppointments = appointments.map((apt) =>
+        apt.id === editingAppointment.id ? { ...apt, ...data } : apt
+      );
+      setAppointments(updatedAppointments);
+      toast({
+        title: "Appointment Updated",
+        description: "The appointment details have been successfully updated.",
+      });
+    } else {
+        const newAppointment: Appointment = {
+          id: `apt${appointments.length + 1}`,
+          patientId: `pat${patients.length + appointments.length + 1}`, // Generate a new patient ID
+          ...data,
+        };
+        setAppointments((prev) => [...prev, newAppointment]);
+        toast({
+          title: "Appointment Scheduled",
+          description: `Appointment for ${newAppointment.patientName} with ${getDoctorName(newAppointment.doctorId)} has been scheduled.`,
+        });
+    }
     setIsDialogOpen(false);
-    form.reset();
-    toast({
-      title: "Appointment Scheduled",
-      description: `Appointment for ${newAppointment.patientName} with ${getDoctorName(newAppointment.doctorId)} has been scheduled.`,
-    });
+    setEditingAppointment(null);
   };
 
   return (
@@ -224,7 +244,7 @@ export function AppointmentsClient({
             <Button
               size="sm"
               className="h-9 gap-1"
-              onClick={() => setIsDialogOpen(true)}
+              onClick={handleCreate}
             >
               <PlusCircle className="h-3.5 w-3.5" />
               <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
@@ -290,6 +310,10 @@ export function AppointmentsClient({
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                        <DropdownMenuItem onSelect={() => handleEdit(appointment)}>
+                          <FileEdit className="mr-2 h-4 w-4" />
+                          Edit
+                        </DropdownMenuItem>
                         <DropdownMenuItem>View Medical History</DropdownMenuItem>
                         <DropdownMenuItem>Reschedule</DropdownMenuItem>
                         <DropdownMenuItem className="text-destructive">
@@ -307,9 +331,9 @@ export function AppointmentsClient({
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="sm:max-w-2xl">
           <DialogHeader>
-            <DialogTitle>Schedule New Appointment</DialogTitle>
+            <DialogTitle>{editingAppointment ? "Edit Appointment" : "Schedule New Appointment"}</DialogTitle>
             <DialogDescription>
-              Fill in the details to register a new patient and schedule an appointment.
+              {editingAppointment ? "Update the appointment details below." : "Fill in the details to register a new patient and schedule an appointment."}
             </DialogDescription>
           </DialogHeader>
           <Form {...form}>
@@ -350,7 +374,7 @@ export function AppointmentsClient({
                     render={({ field }) => (
                     <FormItem>
                         <FormLabel>Gender</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <Select onValueChange={field.onChange} value={field.value}>
                             <FormControl>
                                 <SelectTrigger>
                                 <SelectValue placeholder="Select gender" />
@@ -387,7 +411,7 @@ export function AppointmentsClient({
                     <FormLabel>Doctor</FormLabel>
                     <Select
                       onValueChange={field.onChange}
-                      defaultValue={field.value}
+                      value={field.value}
                     >
                       <FormControl>
                         <SelectTrigger>
@@ -492,7 +516,7 @@ export function AppointmentsClient({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Mode</FormLabel>
-                     <Select onValueChange={field.onChange} defaultValue={field.value}>
+                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Select mode" />
@@ -514,7 +538,7 @@ export function AppointmentsClient({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Status</FormLabel>
-                     <Select onValueChange={field.onChange} defaultValue={field.value}>
+                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Select status" />
@@ -525,6 +549,28 @@ export function AppointmentsClient({
                         <SelectItem value="Pending">Pending</SelectItem>
                         <SelectItem value="Cancelled">Cancelled</SelectItem>
                         <SelectItem value="Completed">Completed</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+               <FormField
+                control={form.control}
+                name="paymentStatus"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Payment Status</FormLabel>
+                     <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select payment status" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                         <SelectItem value="Paid">Paid</SelectItem>
+                         <SelectItem value="Pending">Pending</SelectItem>
+                         <SelectItem value="Partially Paid">Partially Paid</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -549,7 +595,8 @@ export function AppointmentsClient({
                 )}
               />
               <DialogFooter>
-                <Button type="submit">Schedule Appointment</Button>
+                 <Button variant="outline" type="button" onClick={() => setIsDialogOpen(false)}>Cancel</Button>
+                <Button type="submit">{editingAppointment ? "Save Changes" : "Schedule Appointment"}</Button>
               </DialogFooter>
             </form>
           </Form>
