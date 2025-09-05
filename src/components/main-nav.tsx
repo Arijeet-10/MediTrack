@@ -40,11 +40,6 @@ const menuItems = [
     label: "Lab Appointments",
     icon: FlaskConical,
   },
-  {
-    href: "/dashboard/ai-diagnosis",
-    label: "AI Diagnosis",
-    icon: BrainCircuit,
-  },
 ];
 
 export function MainNav() {
