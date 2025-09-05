@@ -11,7 +11,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { FlaskConical, Users, Printer, CheckCircle, Clock, FileText, MoreHorizontal, Sparkles, FileEdit, UserCog, Ban } from "lucide-react";
+import { FlaskConical, Users, Printer, CheckCircle, Clock, FileText, MoreHorizontal, Sparkles, FileEdit, UserCog, Ban, Plus, Trash2 } from "lucide-react";
 import type { LabAppointment, Patient, Analyte } from "@/lib/types";
 import { format } from "date-fns";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
@@ -33,6 +33,12 @@ interface LaboratoryDashboardClientProps {
   patients: Patient[];
 }
 
+const initialEmptyReport: GenerateLabReportOutput = {
+    results: [{ analyte: "", result: "", referenceRange: "" }],
+    interpretation: "",
+};
+
+
 export function LaboratoryDashboardClient({
   initialLabAppointments,
   patients,
@@ -40,8 +46,7 @@ export function LaboratoryDashboardClient({
 
   const [labAppointments, setLabAppointments] = useState(initialLabAppointments);
   const [isReportOpen, setIsReportOpen] = useState(false);
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [generatedReport, setGeneratedReport] = useState<GenerateLabReportOutput | null>(null);
+  const [editedReport, setEditedReport] = useState<GenerateLabReportOutput | null>(null);
   const [selectedAppointment, setSelectedAppointment] = useState<LabAppointment | null>(null);
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
   const { toast } = useToast();
@@ -57,46 +62,33 @@ export function LaboratoryDashboardClient({
     setSelectedAppointment(appointment);
     setSelectedPatient(patient || null);
     
-    // If report data already exists, set it. Otherwise, clear it.
+    // If report data already exists, set it for editing. Otherwise, start with a fresh empty report.
     if (appointment.reportData) {
-        setGeneratedReport(appointment.reportData);
+        setEditedReport(JSON.parse(JSON.stringify(appointment.reportData))); // Deep copy for editing
     } else {
-        setGeneratedReport(null);
+        setEditedReport(JSON.parse(JSON.stringify(initialEmptyReport)));
     }
 
     setIsReportOpen(true);
   }
 
-  const handleGenerateWithAI = async () => {
-    if (!selectedAppointment) return;
-    setIsGenerating(true);
-    setGeneratedReport(null);
-
-    try {
-      const report = await runGenerateLabReport({ testName: selectedAppointment.testName });
-      setGeneratedReport(report);
-      toast({
-        title: "AI Report Generated",
-        description: "Review and save the results.",
-      });
-    } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Generation Failed",
-        description: "Could not generate the lab report. Please try again.",
-      });
-    } finally {
-      setIsGenerating(false);
-    }
-  }
-
   const handleSaveReport = () => {
-    if (!selectedAppointment || !generatedReport) return;
+    if (!selectedAppointment || !editedReport) return;
+    
+    // Basic validation
+    if (editedReport.results.some(r => !r.analyte || !r.result || !r.referenceRange) || !editedReport.interpretation) {
+        toast({
+            variant: "destructive",
+            title: "Incomplete Report",
+            description: "Please fill out all fields before saving.",
+        });
+        return;
+    }
     
     setLabAppointments(currentAppointments =>
       currentAppointments.map(appt =>
         appt.id === selectedAppointment.id 
-          ? { ...appt, status: 'Completed', reportData: generatedReport } 
+          ? { ...appt, status: 'Completed', reportData: editedReport } 
           : appt
       )
     );
@@ -109,15 +101,27 @@ export function LaboratoryDashboardClient({
   };
 
   const handleAnalyteChange = (index: number, field: keyof Analyte, value: string) => {
-    if (!generatedReport) return;
-    const newResults = [...generatedReport.results];
+    if (!editedReport) return;
+    const newResults = [...editedReport.results];
     newResults[index] = {...newResults[index], [field]: value };
-    setGeneratedReport({...generatedReport, results: newResults});
+    setEditedReport({...editedReport, results: newResults});
   }
 
   const handleInterpretationChange = (value: string) => {
-    if (!generatedReport) return;
-    setGeneratedReport({...generatedReport, interpretation: value});
+    if (!editedReport) return;
+    setEditedReport({...editedReport, interpretation: value});
+  }
+
+  const addAnalyteRow = () => {
+    if (!editedReport) return;
+    const newResults = [...editedReport.results, { analyte: "", result: "", referenceRange: "" }];
+    setEditedReport({...editedReport, results: newResults});
+  }
+
+  const removeAnalyteRow = (index: number) => {
+    if (!editedReport || editedReport.results.length <= 1) return;
+    const newResults = editedReport.results.filter((_, i) => i !== index);
+    setEditedReport({...editedReport, results: newResults});
   }
 
 
@@ -212,45 +216,39 @@ export function LaboratoryDashboardClient({
                               <p><strong>Date of Test:</strong> {format(selectedAppointment.date, "PPP")}</p>
                           </div>
                       </div>
-                      
-                      {isGenerating && (
-                        <div className="space-y-4">
-                            <h3 className="font-semibold text-lg mb-2">Generating with AI...</h3>
-                            <Skeleton className="h-8 w-full" />
-                            <Skeleton className="h-8 w-full" />
-                            <Skeleton className="h-8 w-full" />
-                            <Skeleton className="h-20 w-full" />
-                        </div>
-                      )}
 
-                      {!generatedReport && !isGenerating && (
-                        <div className="text-center py-12">
-                            <p className="text-muted-foreground mb-4">You can manually create the report or generate one with AI.</p>
-                            <Button onClick={handleGenerateWithAI} disabled={isGenerating}>
-                                <Sparkles className="mr-2 h-4 w-4" />
-                                Generate with AI
-                            </Button>
-                        </div>
-                      )}
-
-                      {generatedReport && (
+                      {editedReport && (
                         <div className="space-y-6">
                           <div>
-                              <h3 className="font-semibold text-lg mb-2">Test Results</h3>
+                              <div className="flex justify-between items-center mb-2">
+                                <h3 className="font-semibold text-lg">Test Results</h3>
+                                <Button size="sm" variant="outline" onClick={addAnalyteRow}><Plus className="mr-2 h-4 w-4" /> Add Row</Button>
+                              </div>
                               <Table>
                                   <TableHeader>
                                       <TableRow>
                                           <TableHead className="w-1/3">Analyte</TableHead>
                                           <TableHead className="w-1/3">Result</TableHead>
                                           <TableHead className="w-1/3">Reference Range</TableHead>
+                                          <TableHead className="w-[50px]"><span className="sr-only">Remove</span></TableHead>
                                       </TableRow>
                                   </TableHeader>
                                   <TableBody>
-                                      {generatedReport.results.map((res, i) => (
+                                      {editedReport.results.map((res, i) => (
                                           <TableRow key={i}>
-                                              <TableCell><Input value={res.analyte} onChange={(e) => handleAnalyteChange(i, 'analyte', e.target.value)} /></TableCell>
-                                              <TableCell><Input value={res.result} onChange={(e) => handleAnalyteChange(i, 'result', e.target.value)}/></TableCell>
-                                              <TableCell><Input value={res.referenceRange} onChange={(e) => handleAnalyteChange(i, 'referenceRange', e.target.value)}/></TableCell>
+                                              <TableCell><Input placeholder="e.g., Hemoglobin" value={res.analyte} onChange={(e) => handleAnalyteChange(i, 'analyte', e.target.value)} /></TableCell>
+                                              <TableCell><Input placeholder="e.g., 14.5 g/dL" value={res.result} onChange={(e) => handleAnalyteChange(i, 'result', e.target.value)}/></TableCell>
+                                              <TableCell><Input placeholder="e.g., 13.5-17.5 g/dL" value={res.referenceRange} onChange={(e) => handleAnalyteChange(i, 'referenceRange', e.target.value)}/></TableCell>
+                                              <TableCell>
+                                                <Button 
+                                                  variant="ghost" 
+                                                  size="icon" 
+                                                  onClick={() => removeAnalyteRow(i)} 
+                                                  disabled={editedReport.results.length <= 1}
+                                                >
+                                                  <Trash2 className="h-4 w-4 text-destructive" />
+                                                </Button>
+                                              </TableCell>
                                           </TableRow>
                                       ))}
                                   </TableBody>
@@ -260,10 +258,10 @@ export function LaboratoryDashboardClient({
                           <div className="pt-4">
                               <h3 className="font-semibold mb-2">Interpretation</h3>
                               <Textarea 
-                                value={generatedReport.interpretation} 
+                                value={editedReport.interpretation} 
                                 onChange={(e) => handleInterpretationChange(e.target.value)}
                                 rows={4}
-                                placeholder="Enter interpretation here..."
+                                placeholder="Enter interpretation here... The results appear normal."
                               />
                           </div>
                         </div>
@@ -273,11 +271,11 @@ export function LaboratoryDashboardClient({
               <DialogFooter className="no-print pt-4 border-t">
                   <div className="flex justify-between w-full">
                       <div>
-                          <Button variant="outline" onClick={handlePrint} disabled={!generatedReport}><Printer className="mr-2 h-4 w-4" />Print Report</Button>
+                          <Button variant="outline" onClick={handlePrint} disabled={!editedReport}><Printer className="mr-2 h-4 w-4" />Print Report</Button>
                       </div>
                       <div className="flex gap-2">
                            <Button variant="ghost" onClick={() => setIsReportOpen(false)}>Cancel</Button>
-                           <Button onClick={handleSaveReport} disabled={isGenerating || !generatedReport}><FileEdit className="mr-2 h-4 w-4" />Save Report</Button>
+                           <Button onClick={handleSaveReport} disabled={!editedReport}><FileEdit className="mr-2 h-4 w-4" />Save Report</Button>
                       </div>
                   </div>
               </DialogFooter>
