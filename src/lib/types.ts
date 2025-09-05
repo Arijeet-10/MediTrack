@@ -7,6 +7,7 @@ export type AppointmentStatus = "Confirmed" | "Pending" | "Cancelled" | "Complet
 export type AppointmentMode = "In-person" | "Online" | "Telephonic";
 export type PaymentStatus = "Paid" | "Pending" | "Partially Paid";
 export type DoctorStatus = "Active" | "Inactive" | "On Leave";
+export type BillingStatus = "Paid" | "Pending" | "Overdue";
 
 
 export interface Patient {
@@ -61,7 +62,7 @@ export interface Billing {
   patientId: string;
   amount: number;
   date: Date;
-  status: "Paid" | "Pending" | "Overdue";
+  status: BillingStatus;
 }
 
 export interface Analyte {

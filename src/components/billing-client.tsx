@@ -20,7 +20,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { MoreHorizontal, PlusCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import type { Billing, Patient } from "@/lib/types";
+import type { Billing, Patient, BillingStatus } from "@/lib/types";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 
@@ -38,7 +38,7 @@ export function BillingClient({
   const getPatientName = (patientId: string) =>
     patients.find((p) => p.id === patientId)?.name || "Unknown";
 
-  const getStatusVariant = (status: "Paid" | "Pending" | "Overdue") => {
+  const getStatusVariant = (status: BillingStatus) => {
     switch (status) {
       case "Paid":
         return "default";
@@ -81,7 +81,7 @@ export function BillingClient({
           <TableBody>
             {billings.map((bill) => (
               <TableRow key={bill.id}>
-                <TableCell className="font-medium">{bill.id}</TableCell>
+                <TableCell className="font-medium">{bill.id.toUpperCase()}</TableCell>
                 <TableCell>{getPatientName(bill.patientId)}</TableCell>
                 <TableCell>Rs. {bill.amount.toLocaleString("en-IN")}</TableCell>
                 <TableCell>{format(bill.date, "dd-MMM-yyyy")}</TableCell>
