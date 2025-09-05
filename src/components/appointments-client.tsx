@@ -496,7 +496,7 @@ export function AppointmentsClient({
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Select mode" />
-                        </Trigger>
+                        </SelectTrigger>
                       </FormControl>
                       <SelectContent>
                         <SelectItem value="In-person">In-person</SelectItem>
@@ -518,7 +518,7 @@ export function AppointmentsClient({
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Select status" />
-                        </Trigger>
+                        </SelectTrigger>
                       </FormControl>
                       <SelectContent>
                         <SelectItem value="Confirmed">Confirmed</SelectItem>
