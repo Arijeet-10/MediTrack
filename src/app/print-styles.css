@@ -2,16 +2,17 @@
   body * {
     visibility: hidden;
   }
-  .printable-area, .printable-area * {
+  .printable-area-container .printable-area, 
+  .printable-area-container .printable-area * {
     visibility: visible;
   }
-  .printable-area {
+  .printable-area-container .printable-area {
     position: absolute;
     left: 0;
     top: 0;
     width: 100%;
   }
-  .no-print {
+  .printable-area-container .no-print {
     display: none !important;
   }
 }

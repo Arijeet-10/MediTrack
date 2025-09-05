@@ -86,7 +86,7 @@ export function LaboratoryDashboardClient({
 
 
   return (
-     <div className="min-h-screen w-full bg-background printable-area">
+     <div className="min-h-screen w-full bg-background printable-area-container">
        <header className="sticky top-0 z-10 flex h-16 items-center gap-4 border-b bg-background px-4 md:px-6 no-print">
          <Link href="#" className="flex items-center gap-2 font-semibold">
           <Logo className="h-6 w-6" />
