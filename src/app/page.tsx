@@ -17,6 +17,8 @@ function getDashboardLink(role: string) {
     switch (role.toLowerCase()) {
         case "laboratory":
             return "/dashboard/laboratory";
+        case "admin":
+             return "/dashboard";
         default:
             return "/dashboard";
     }
