@@ -18,7 +18,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal, PlusCircle, Video, Phone, Building, FileEdit, Search, Printer } from "lucide-react";
+import { MoreHorizontal, PlusCircle, Video, Phone, Building, FileEdit, Search, Printer, Users, CreditCard, Stethoscope } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -56,10 +56,11 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useToast } from "@/hooks/use-toast";
 import type { Appointment, Patient, Doctor, AppointmentStatus, AppointmentMode, PaymentStatus, Gender } from "@/lib/types";
-import { format } from "date-fns";
+import { format, startOfDay } from "date-fns";
 import { cn } from "@/lib/utils";
 import { Badge } from "./ui/badge";
 import { AppointmentSlipDialog } from "./appointment-slip-dialog";
+import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 
 interface AppointmentsClientProps {
   initialAppointments: Appointment[];
@@ -151,6 +152,7 @@ export function AppointmentsClient({
   const { toast } = useToast();
   const [isSlipOpen, setIsSlipOpen] = useState(false);
   const [selectedAppointmentForSlip, setSelectedAppointmentForSlip] = useState<Appointment | null>(null);
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
 
   const getDoctorName = (doctorId: string) => doctors.find((d) => d.id === doctorId)?.name || "Unknown";
 
@@ -186,6 +188,10 @@ export function AppointmentsClient({
   const filteredAppointments = useMemo(() => {
     let filtered = appointments;
 
+    if (selectedDate) {
+        filtered = filtered.filter(a => startOfDay(new Date(a.date)).getTime() === startOfDay(selectedDate).getTime());
+    }
+
     if (statusFilter !== "All") {
       filtered = filtered.filter(a => a.status === statusFilter);
     }
@@ -197,7 +203,25 @@ export function AppointmentsClient({
     }
     
     return filtered;
-  }, [appointments, statusFilter, searchQuery]);
+  }, [appointments, statusFilter, searchQuery, selectedDate]);
+  
+  const dailyStats = useMemo(() => {
+    const todaysAppointments = filteredAppointments;
+
+    const totalPatients = new Set(todaysAppointments.map(a => a.patientName)).size;
+    const amountCollected = todaysAppointments
+        .filter(a => a.paymentStatus === 'Paid')
+        .reduce((sum, a) => sum + a.fees, 0);
+
+    const appointmentsPerDoctor = todaysAppointments.reduce((acc, a) => {
+        const docName = getDoctorName(a.doctorId);
+        acc[docName] = (acc[docName] || 0) + 1;
+        return acc;
+    }, {} as Record<string, number>);
+
+    return { totalPatients, amountCollected, appointmentsPerDoctor };
+  }, [filteredAppointments, doctors]);
+
 
   const handleEdit = (appointment: Appointment) => {
     setEditingAppointment(appointment);
@@ -250,28 +274,28 @@ export function AppointmentsClient({
             Appointments
           </h1>
           <div className="ml-auto flex items-center gap-2">
-             <div className="relative">
-                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input
-                    type="search"
-                    placeholder="Search patient..."
-                    className="pl-8 sm:w-[200px] md:w-[300px]"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
+            <Popover>
+                <PopoverTrigger asChild>
+                <Button
+                    variant={"outline"}
+                    className={cn(
+                    "w-[200px] justify-start text-left font-normal",
+                    !selectedDate && "text-muted-foreground"
+                    )}
+                >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {selectedDate ? format(selectedDate, "PPP") : <span>Pick a date</span>}
+                </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="end">
+                <Calendar
+                    mode="single"
+                    selected={selectedDate}
+                    onSelect={setSelectedDate}
+                    initialFocus
                 />
-            </div>
-             <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as any)}>
-                <SelectTrigger className="w-[180px]">
-                    <SelectValue placeholder="Filter by status" />
-                </SelectTrigger>
-                <SelectContent>
-                    <SelectItem value="All">All Statuses</SelectItem>
-                    <SelectItem value="Confirmed">Confirmed</SelectItem>
-                    <SelectItem value="Pending">Pending</SelectItem>
-                    <SelectItem value="Completed">Completed</SelectItem>
-                    <SelectItem value="Cancelled">Cancelled</SelectItem>
-                </SelectContent>
-            </Select>
+                </PopoverContent>
+            </Popover>
             <Button
               size="sm"
               className="h-9 gap-1"
@@ -284,6 +308,77 @@ export function AppointmentsClient({
             </Button>
           </div>
         </div>
+
+        <div className="grid gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-3 no-print">
+            <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">
+                        Total Patients ({selectedDate ? format(selectedDate, "MMM dd") : 'All'})
+                    </CardTitle>
+                    <Users className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                    <div className="text-2xl font-bold">{dailyStats.totalPatients}</div>
+                </CardContent>
+            </Card>
+            <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">
+                        Amount Collected
+                    </CardTitle>
+                    <CreditCard className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                    <div className="text-2xl font-bold">Rs. {dailyStats.amountCollected.toLocaleString('en-IN')}</div>
+                </CardContent>
+            </Card>
+             <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Appts. per Doctor</CardTitle>
+                    <Stethoscope className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent className="text-xs text-muted-foreground">
+                   {Object.entries(dailyStats.appointmentsPerDoctor).length > 0 ? (
+                        Object.entries(dailyStats.appointmentsPerDoctor).map(([name, count]) => (
+                            <div key={name} className="flex justify-between">
+                                <span>{name}</span>
+                                <span>{count}</span>
+                            </div>
+                        ))
+                   ) : <p>No appointments today.</p>}
+                </CardContent>
+            </Card>
+        </div>
+
+
+        <div className="flex items-center no-print">
+            <div className="flex items-center gap-2">
+                 <div className="relative">
+                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <Input
+                        type="search"
+                        placeholder="Search patient..."
+                        className="pl-8 sm:w-[200px] md:w-[300px]"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                    />
+                </div>
+                 <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as any)}>
+                    <SelectTrigger className="w-[180px]">
+                        <SelectValue placeholder="Filter by status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="All">All Statuses</SelectItem>
+                        <SelectItem value="Confirmed">Confirmed</SelectItem>
+                        <SelectItem value="Pending">Pending</SelectItem>
+                        <SelectItem value="Completed">Completed</SelectItem>
+                        <SelectItem value="Cancelled">Cancelled</SelectItem>
+                    </SelectContent>
+                </Select>
+            </div>
+        </div>
+
+
         <div className="rounded-xl border shadow-sm bg-card no-print">
           <Table>
             <TableHeader>
@@ -653,3 +748,5 @@ export function AppointmentsClient({
     </>
   );
 }
+
+    
