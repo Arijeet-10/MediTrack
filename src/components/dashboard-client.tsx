@@ -112,9 +112,6 @@ export function DashboardClient({
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">Rs. {totalRevenue.toLocaleString("en-IN")}</div>
-            <p className="text-xs text-muted-foreground">
-              +20.1% from last month
-            </p>
           </CardContent>
         </Card>
         <Card>
@@ -126,9 +123,6 @@ export function DashboardClient({
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">+{patients.length}</div>
-            <p className="text-xs text-muted-foreground">
-              +180.1% from last month
-            </p>
           </CardContent>
         </Card>
         <Card>
@@ -138,9 +132,6 @@ export function DashboardClient({
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">+{doctors.length}</div>
-            <p className="text-xs text-muted-foreground">
-              +19% from last month
-            </p>
           </CardContent>
         </Card>
         <Card>
@@ -150,9 +141,6 @@ export function DashboardClient({
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">+{appointments.length}</div>
-            <p className="text-xs text-muted-foreground">
-              +2 since last hour
-            </p>
           </CardContent>
         </Card>
       </div>
