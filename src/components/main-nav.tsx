@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BrainCircuit, Calendar, LayoutDashboard, Stethoscope } from "lucide-react";
+import { BrainCircuit, Calendar, LayoutDashboard, Stethoscope, List } from "lucide-react";
 
 import {
   SidebarMenu,
@@ -27,6 +27,11 @@ export function MainNav() {
       href: "/dashboard/doctors",
       label: "Doctors",
       icon: Stethoscope,
+    },
+    {
+      href: "/dashboard/doctors/master-list",
+      label: "Doctor Master List",
+      icon: List,
     },
     {
       href: "/dashboard/ai-diagnosis",
