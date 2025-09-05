@@ -9,11 +9,11 @@ export const departments: Department[] = [
 ];
 
 export const doctors: Doctor[] = [
-  { id: "doc1", name: "Dr. Emily Carter", department: "Cardiology", availability: ["Monday 9-12", "Wednesday 14-17"] },
-  { id: "doc2", name: "Dr. Ben Hayes", department: "Neurology", availability: ["Tuesday 10-13", "Thursday 15-18"] },
-  { id: "doc3", name: "Dr. Olivia Chen", department: "Pediatrics", availability: ["Friday 8-11"] },
-  { id: "doc4", name: "Dr. Marcus Rodriguez", department: "Orthopedics", availability: ["Monday 13-16", "Wednesday 9-12"] },
-  { id: "doc5", name: "Dr. Sophia Lee", department: "General", availability: ["Tuesday 14-17", "Thursday 10-13"] },
+  { id: "doc1", name: "Dr. Emily Carter", department: "Cardiology", availability: ["Monday 9-12", "Wednesday 14-17"], rating: 4.8, experience: 12 },
+  { id: "doc2", name: "Dr. Ben Hayes", department: "Neurology", availability: ["Tuesday 10-13", "Thursday 15-18"], rating: 4.9, experience: 15 },
+  { id: "doc3", name: "Dr. Olivia Chen", department: "Pediatrics", availability: ["Friday 8-11"], rating: 4.7, experience: 8 },
+  { id: "doc4", name: "Dr. Marcus Rodriguez", department: "Orthopedics", availability: ["Monday 13-16", "Wednesday 9-12"], rating: 4.6, experience: 10 },
+  { id: "doc5", name: "Dr. Sophia Lee", department: "General", availability: ["Tuesday 14-17", "Thursday 10-13"], rating: 4.8, experience: 7 },
 ];
 
 export const patients: Patient[] = [
@@ -90,7 +90,7 @@ export const appointments: Appointment[] = [
         id: "apt3",
         patientId: "pat4",
         doctorId: "doc3",
-        date: new Date("2024-08-11T09:30:00Z"),
+        date: new date("2024-08-11T09:30:00Z"),
         time: "09:30 AM",
         reason: "Checkup",
     },

@@ -18,6 +18,8 @@ export interface Doctor {
   name: string;
   department: Department;
   availability: string[]; // e.g., ["Monday 9-12", "Wednesday 14-17"]
+  rating: number;
+  experience: number;
 }
 
 export interface Appointment {

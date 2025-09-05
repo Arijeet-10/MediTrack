@@ -3,7 +3,35 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/com
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { doctors } from "@/lib/data";
 import { Badge } from "@/components/ui/badge";
-import { Stethoscope } from "lucide-react";
+import { Stethoscope, Heart, Brain, Bone, Baby, Star, MessageSquare, Phone } from "lucide-react";
+import type { Department } from "@/lib/types";
+import { Button } from "@/components/ui/button";
+
+const departmentIcons: Record<Department, React.ElementType> = {
+  Cardiology: Heart,
+  Neurology: Brain,
+  Orthopedics: Bone,
+  Pediatrics: Baby,
+  General: Stethoscope,
+};
+
+const renderStars = (rating: number) => {
+    const fullStars = Math.floor(rating);
+    const halfStar = rating % 1 !== 0;
+    const emptyStars = 5 - fullStars - (halfStar ? 1 : 0);
+    return (
+        <div className="flex items-center gap-0.5">
+            {[...Array(fullStars)].map((_, i) => (
+                <Star key={`full-${i}`} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+            ))}
+            {halfStar && <Star key="half" className="h-4 w-4 fill-yellow-400 text-yellow-400" style={{ clipPath: 'inset(0 50% 0 0)' }} />}
+            {[...Array(emptyStars)].map((_, i) => (
+                <Star key={`empty-${i}`} className="h-4 w-4 fill-muted stroke-muted-foreground" />
+            ))}
+        </div>
+    );
+};
+
 
 export default function DoctorsPage() {
   return (
@@ -13,8 +41,10 @@ export default function DoctorsPage() {
           Our Doctors
         </h1>
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {doctors.map((doctor) => (
-            <Card key={doctor.id}>
+          {doctors.map((doctor) => {
+            const Icon = departmentIcons[doctor.department] || Stethoscope;
+            return (
+            <Card key={doctor.id} className="transition-all duration-200 hover:shadow-lg hover:scale-105">
               <CardHeader className="flex flex-row items-center gap-4">
                 <Avatar className="h-16 w-16">
                   <AvatarImage src={`/avatars/${doctor.id}.png`} alt={doctor.name} data-ai-hint="doctor headshot" />
@@ -25,22 +55,35 @@ export default function DoctorsPage() {
                   <CardDescription>{doctor.department}</CardDescription>
                 </div>
               </CardHeader>
-              <CardContent>
-                <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
-                  <Stethoscope className="h-4 w-4" />
-                  <span>{doctor.department}</span>
+              <CardContent className="space-y-4">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Icon className="h-4 w-4" />
+                  <span>{doctor.experience} years experience</span>
+                </div>
+                 <div className="flex items-center gap-2 text-sm">
+                  {renderStars(doctor.rating)}
+                  <span className="text-muted-foreground">({doctor.rating}/5)</span>
                 </div>
                 <div>
-                  <h4 className="font-semibold mb-1">Availability</h4>
+                  <h4 className="font-semibold mb-2">Availability</h4>
                   <div className="flex flex-wrap gap-2">
                     {doctor.availability.map((slot) => (
                       <Badge key={slot} variant="secondary">{slot}</Badge>
                     ))}
                   </div>
                 </div>
+                <div className="flex gap-2 pt-2">
+                    <Button variant="outline" size="sm">
+                        <MessageSquare className="mr-2 h-4 w-4" /> Message
+                    </Button>
+                    <Button variant="outline" size="sm">
+                        <Phone className="mr-2 h-4 w-4" /> Call
+                    </Button>
+                </div>
+                <Button className="w-full mt-2">Book Appointment</Button>
               </CardContent>
             </Card>
-          ))}
+          )})}
         </div>
       </div>
     </AppShell>

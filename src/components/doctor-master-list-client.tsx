@@ -57,6 +57,8 @@ const formSchema = z.object({
   name: z.string().min(1, "Name is required"),
   department: z.string().min(1, "Department is required"),
   availability: z.string().min(1, "Availability is required"),
+  rating: z.coerce.number().min(0).max(5),
+  experience: z.coerce.number().min(0),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -72,6 +74,8 @@ export function DoctorMasterListClient({ initialDoctors, departments }: DoctorMa
       name: "",
       department: "",
       availability: "",
+      rating: 4.5,
+      experience: 5,
     },
   });
 
@@ -81,6 +85,8 @@ export function DoctorMasterListClient({ initialDoctors, departments }: DoctorMa
       name: data.name,
       department: data.department as Department,
       availability: data.availability.split(",").map((s) => s.trim()),
+      rating: data.rating,
+      experience: data.experience,
     };
     setDoctors((prev) => [...prev, newDoctor]);
     setIsDialogOpen(false);
@@ -114,6 +120,8 @@ export function DoctorMasterListClient({ initialDoctors, departments }: DoctorMa
                 <TableHead>Name</TableHead>
                 <TableHead>Department</TableHead>
                 <TableHead>Availability</TableHead>
+                <TableHead>Rating</TableHead>
+                <TableHead>Experience</TableHead>
                 <TableHead>
                   <span className="sr-only">Actions</span>
                 </TableHead>
@@ -125,6 +133,8 @@ export function DoctorMasterListClient({ initialDoctors, departments }: DoctorMa
                   <TableCell className="font-medium">{doctor.name}</TableCell>
                   <TableCell>{doctor.department}</TableCell>
                   <TableCell>{doctor.availability.join(", ")}</TableCell>
+                  <TableCell>{doctor.rating}/5</TableCell>
+                  <TableCell>{doctor.experience} years</TableCell>
                   <TableCell>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
@@ -203,6 +213,32 @@ export function DoctorMasterListClient({ initialDoctors, departments }: DoctorMa
                     <FormLabel>Availability</FormLabel>
                     <FormControl>
                       <Input placeholder="e.g., Monday 9-12, Wednesday 14-17" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="rating"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Rating (0-5)</FormLabel>
+                    <FormControl>
+                      <Input type="number" step="0.1" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+               <FormField
+                control={form.control}
+                name="experience"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Years of Experience</FormLabel>
+                    <FormControl>
+                      <Input type="number" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
