@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { BrainCircuit, Calendar, LayoutDashboard, Stethoscope, List, CreditCard, FlaskConical, UserPlus } from "lucide-react";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { DailyStats } from "./daily-stats";
 
 import {
   SidebarMenu,
@@ -69,21 +71,35 @@ export function MainNav() {
   };
 
   return (
-    <SidebarMenu>
-      {menuItems.map((item) => (
-        <SidebarMenuItem key={item.href}>
-          <Link href={item.href}>
-            <SidebarMenuButton
-              isActive={isActive(item.href)}
-              className={cn("w-full justify-start")}
-              tooltip={item.label}
-            >
-              <item.icon className="h-4 w-4" />
-              <span>{item.label}</span>
-            </SidebarMenuButton>
-          </Link>
-        </SidebarMenuItem>
-      ))}
-    </SidebarMenu>
+    <>
+      <SidebarMenu>
+        {menuItems.map((item) => (
+          <SidebarMenuItem key={item.href}>
+            <Link href={item.href}>
+              <SidebarMenuButton
+                isActive={isActive(item.href)}
+                className={cn("w-full justify-start")}
+                tooltip={item.label}
+              >
+                <item.icon className="h-4 w-4" />
+                <span>{item.label}</span>
+              </SidebarMenuButton>
+            </Link>
+          </SidebarMenuItem>
+        ))}
+      </SidebarMenu>
+      <div className="p-2 group-data-[collapsible=icon]:hidden">
+        <Accordion type="single" collapsible className="w-full">
+            <AccordionItem value="item-1" className="border-none">
+                <AccordionTrigger className="text-xs font-semibold uppercase text-muted-foreground hover:no-underline rounded-md px-2 hover:bg-sidebar-accent">
+                    Daily Stats
+                </AccordionTrigger>
+                <AccordionContent className="p-2">
+                    <DailyStats />
+                </AccordionContent>
+            </AccordionItem>
+        </Accordion>
+      </div>
+    </>
   );
 }
