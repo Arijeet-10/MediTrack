@@ -13,6 +13,20 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
+function getDashboardLink(role: string) {
+    switch (role.toLowerCase()) {
+        case "doctor":
+            return "/dashboard/doctor";
+        case "laboratory":
+            return "/dashboard/laboratory";
+        case "pharmacist":
+            return "/dashboard/pharmacist";
+        default:
+            return "/dashboard";
+    }
+}
+
+
 function LoginForm({ role }: { role: string }) {
   return (
     <div className="grid gap-4">
@@ -38,7 +52,7 @@ function LoginForm({ role }: { role: string }) {
         <Input id={`${role}-password`} type="password" required />
       </div>
       <Button type="submit" className="w-full" asChild>
-        <Link href="/dashboard">Login as {role}</Link>
+        <Link href={getDashboardLink(role)}>Login as {role}</Link>
       </Button>
     </div>
   );
