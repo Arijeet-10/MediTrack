@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -9,16 +10,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuTrigger,
-  DropdownMenuSeparator,
-} from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal, PlusCircle } from "lucide-react";
+import { PlusCircle, FileText } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import type { LabAppointment, Patient } from "@/lib/types";
 import { format } from "date-fns";
@@ -151,9 +144,7 @@ export function LabAppointmentsClient({
                 <TableHead>Test Name</TableHead>
                 <TableHead>Date</TableHead>
                 <TableHead>Status</TableHead>
-                <TableHead>
-                  <span className="sr-only">Actions</span>
-                </TableHead>
+                <TableHead>Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -167,27 +158,16 @@ export function LabAppointmentsClient({
                     <Badge variant={getStatusVariant(appt.status)}>{appt.status}</Badge>
                   </TableCell>
                   <TableCell>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button aria-haspopup="true" size="icon" variant="ghost">
-                          <MoreHorizontal className="h-4 w-4" />
-                          <span className="sr-only">Toggle menu</span>
+                    {onGenerateReport && appt.status !== 'Cancelled' && (
+                       <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => onGenerateReport(appt)}
+                        >
+                          <FileText className="mr-2 h-4 w-4" />
+                          {appt.status === 'Completed' ? 'View Report' : 'Generate Report'}
                         </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                         {onGenerateReport && appt.status !== 'Cancelled' && (
-                          <DropdownMenuItem onClick={() => onGenerateReport(appt)}>
-                            {appt.status === 'Completed' ? 'View Report' : 'Generate Report'}
-                          </DropdownMenuItem>
-                        )}
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem>Reschedule</DropdownMenuItem>
-                        <DropdownMenuItem className="text-destructive">
-                          Cancel
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                    )}
                   </TableCell>
                 </TableRow>
               ))}
